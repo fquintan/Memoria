@@ -216,3 +216,7 @@ PROF. GUÍA: SR. \MakeUppercase\@guia \\
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\1}{\mathbf{1}}
 \let\epsilon\varepsilon
+
+%% Todo's:
+\usepackage{color}
+\newcommand{\TODO}[1]{\textcolor{red}{TODO: #1}}
