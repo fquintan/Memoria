@@ -1,18 +1,15 @@
 \chapter{Implementación}
-En el siguiente capítulo se describe la implementación del sistema desarrollado durante la memoria. El capítulo se divide en una sección para el cliente Android y una para el servidor, cada sección detalla la implementación de dos versiones alternativas del sistema, una que realiza el cálculo de descriptores en el dispositivo móvil, y que envía solo los descriptores al servidor para realizar la búsqueda, y otra versión ...
-\TODO{Pensar en mejores nombres para los sistemas alternativos}
-\section{Cliente Android}
-En este sección se detalla la implementación del cliente Android, que corresponde a una aplicación con la cual un usuario puede grabar un video utilizando la cámara del dispositivo ... 
+En el siguiente capítulo se describe la implementación del sistema desarrollado durante la memoria. Se implementaron dos posibles arquitecturas para un sistema de reconocimiento de videos. La primera alternativa graba videos con el dispositivo móvil y los envía completos al servidor, para que este calcule sus descriptores y realice la búsqueda, llamamos a esta la alternativa \emph{centralizada} pues todos los cálculos son realizados en el servidor. La segunda alternativa del sistema realiza los cálculos de descriptores en el mismo dispositivo móvil que graba el video, luego solo es necesario enviar los descriptores calculados al servidor que ejecuta la búsqueda, llamamos a esta alternativa \emph{distribuida} pues los cálculos están repartidos entre el cliente y el servidor.
 
-\subsection{Sistema Distribuido}
+El capítulo se divide en una sección para la alternativa centralizada y otra para la distribuida. A su vez cada sección se divide en la implementación del cliente Android y el servidor.
+\TODO{Pensar en mejores nombres para los sistemas alternativos}
+
+
+\section{Sistema Centralizado}
+\subsection{Cliente Android}
+\subsection{Servidor}
+\section{Sistema Distribuido}
 En esta versión del sistema el cálculo de descriptores para la búsqueda es realizado por el cliente Android utilizando las herramientas para computación paralela descritas en secciones anteriores. Una vez calculados, se envían solo estos descriptores al servidor el cual los usa para realizar la búsqueda por similitud y luego comunica los resultados de vuelta al cliente como ilustra la Figura~\ref{imagenes/cap3/arquitectura_distribuida.png}. \TODO{agregar imagen de la arquitectura distribuida}
 
-
-
-
-
-\subsection{Sistema Centralizado}
-
-\section{Servidor}
-
-\lipsum[50-60]
+\subsection{Cliente Android}
+\subsection{Servidor}

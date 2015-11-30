@@ -4,17 +4,96 @@ En este capítulo se presentan conceptos teóricos necesarios para la comprensi�
 
 \section{Definiciones}
 \begin{enumerate}
-\item Imagen: 
+\item Imagen: Una imagen se puede considerar una matriz de pixeles. El contenido de cada pixel depende del tipo de imagen, en el caso de imágenes en tonos de grises cada pixel corresponde a un valor entero entre 0 y 255, en el caso de imágenes a color cada pixel corresponde a tres números enteros cuyo significado depende del espacio de color que se utilice. En esta memoria las imágenes a color siempre corresponderán al espacio RGB, donde los tres valores del pixel corresponden a su intensidad de rojo, verde y azul respectivamente.
+
+\item Video: Corresponde a una secuencia de imágenes (de aquí en adelante \textit{frames}) presentadas cada cierto intervalo de tiempo regular (por ejemplo 24 \textit{frames} cada segundo). 
 \end{enumerate}
 
 \section{Descriptores}
 Un \emph{descriptor} de imagen es una forma representar dicha imagen por sus características (como su distribución de colores, orientación de bordes, textura, etc). Los descriptores son usualmente representados como vectores multidimensionales. Para compararlos es común usar una función de distancia, como por ejemplo la distancia euclideana entre vectores.
-El descriptor de una imagen puede ser global o local dependiendo de si describe la imagen completa o solo sectores de ella.
+El descriptor de una imagen puede ser global o local dependiendo de si describe la imagen completa o solo sectores de ella. \\
+Dado que un video es una secuencia de imágenes se puede describir usando una secuencia de descriptores de imágenes, para hacer esto típicamente se submuestrean loas frames del video, es decir, aunque el video muestre 24 frames por segundo, se pueden considerar solo 2 cada segundo para describir el video. Esto funciona debido que en la mayoría de los casos dos frames consecutivos son muy similares entre sí, por lo que tomar todos los frames del video para describirlo aporta información redundante.\\
+Es necesario comparar videos o imágenes utilizando descriptores en vez de comparar sus archivos bit a bit debido a que se pueden realizar transformaciones sobre una imagen que cambien totalmente los bits de su archivo sin modificar mucho el contenido de esta, como por ejemplo iluminar la imagen sumándole un valor fijo al valor de todos sus pixeles.
+
 \section{Búsqueda por similitud}
+
+En términos generales la búsqueda por similitud se refiere a distintos tipos de búsqueda sobre espacios donde la única comparación válida entre objetos es su similitud, esto ocurre típicamente sobre tipos de datos complejos que carecen de un ordenamiento natural, como es el caso de los videos.
+
+Esta memoria se enmarca en el problema de búsqueda por similitud en videos, en particular dado una grabación de un video hecha por un celular, se quiere encontrar el video original. Es evidente que la grabación no será exactamente igual al video original debido a transformaciones de color y perspectiva inherentes a la grabación, sin embargo debiese ser suficientemente similar en contenido para identificar el video original a partir de la grabación. Utilizamos descriptores para medir la similitud de dos videos.
+
+En otras palabras, el problema se reduce a que dado un video de búsqueda $q$, se desea encontrar un video $q'$ en una base de datos que sea similar a $q$. Recordando que un video se describe usando una secuencia de descriptores de imágenes,  
+
 \subsection{Comparación de descriptores}
+Cada tipo de descriptor se representa como un vector 
 \subsection{Comparación de videos}
-\section{Renderscript}
+\section{RenderScript}
+Los dispositivos móviles disponen de limitada memoria y capacidad de computo en comparación con un computador de escritorio. Es por esto que para implementar la extracción de descriptores en Android fue necesario buscar alternativas que permitieran hacer uso eficiente de los recursos disponibles, después de investigar se encontró que Android cuenta con un framework propio para aplicaciones que requieran alta capacidad de computo llamada RenderScript \footnote{\url{http://developer.android.com/guide/topics/renderscript/compute.html}}
+
+RenderScript es un framework de Android diseñado para lograr alto rendimiento al correr código en paralelo, aunque algoritmos secuenciales también pueden verse beneficiados por él. El funcionamiento de RenderScript se basa en escribir un \emph{kernel} de procesamiento que el sistema puede distribuir a los procesadores disponibles en el dispositivo, como los múltiples núcleos de la CPU, o la GPU. 
+Los kernel se escriben en un lenguaje derivado de C99, a continuación se presenta un ejemplo de un kernel que convierte una imagen en RGBA a escala de grises.
+
+\begin{lstlisting}[basicstyle=\small,frame=bt]
+#pragma version(1)
+#pragma rs java_package_name(fquintan.renderscripttest)
+#pragma rs_fp_relaxed
+
+void  rgba_to_grayscale(uchar4 *v_in, uchar *v_out,
+                                uint32_t x, uint32_t y) {
+    red = (*v_in).r;
+    green = (*v_in).g;
+    blue = (*v_in).b;
+    uchar intensity = (uchar) 0.2989*red + 0.5870*green + 0.1140*blue;
+    *v_out = intensity;
+}
+\end{lstlisting}
+
+Las primeras tres líneas corresponden a configuración de Renderscript. La función \texttt{rgb\_to\_grayscale} recibe 4 parámetros. El primero es un puntero a un \texttt{uchar4}, un tipo nativo de RenderScript que representa un pixel con cuatro elementos, este corresponde a un pixel de la imagen de entrada. El segundo es un puntero a un \texttt{uchar} que corresponde a un pixel de la imágen de salida. El tercer y cuarto parámetro corresponden a las coordenadas que ocupan los pixeles de entrada y salida en sus respectivas imágenes. El cuerpo de la función extrae los valores de rojo, verde y azul del pixel de entrada, calcula el valor de gris correspondiente y lo asigna al pixel de salida.
+
+El código anterior se ejecutará una vez para cada pixel de la imagen de entrada, creando así la imagen de salida. El sistema operativo distribuirá esta ejecución de la mejor manera posible haciendo uso de los múltiples núcleos de la CPU o GPU para poder realizar el cálculo de varios pixeles en paralelo.
+
+El caso anterior es simple dado que todos los pixeles son independientes entre sí, por lo que no requiere esfuerzo del programador sincronizar su ejecución. Para casos más complejos RenderScript cuenta con primitivas de sincronización que permiten tener acceso exclusivo a una variable compartida para modificar su valor.
+
+Suponiendo que el código anterior se guarda en el archivo \texttt{RGBA2Gray.rs} al compilar se generará la clase Java \texttt{ScriptC\_RGBA2Gray} con código que permite ejecutar el script. Para ejecutar primero debemos pasar el input a un formato que RenderScript pueda recibir, para esto el framework provee la clase \texttt{Allocation}\footnote{\url{http://developer.android.com/reference/android/renderscript/Allocation.html}}. Una Allocation es un contenedor para los elementos de entrada y salida de un script. Para el ejemplo anterior debemos crear dos Allocations como sigue:
+
+\begin{lstlisting}[language=Java, frame=bt, numbers=left]
+Allocation inAllocation;
+Allocation outAllocation;
+
+rs = RenderScript.create(context);
+
+Type.Builder inType = new Type.Builder(rs, Element.U8_4(rs));
+inType.setX(imageWidth);
+inType.setY(imageHeight);
+
+inAllocation = Allocation.createTyped(rs, inType.create(),
+            Allocation.USAGE_SCRIPT);
+
+Type.Builder outType = new Type.Builder(rs, Element.U8(rs));
+outType.setX(imageWidth);
+outType.setY(imageHeight);
+
+outAllocation = Allocation.createTyped(rs, outType.create(),
+            Allocation.USAGE_SCRIPT);
+\end{lstlisting}
+
+Notemos que en las líneas 8 y 13 se define el tipo de elemento de cada Allocation, en este caso, la entrada corresponde a pixeles de tipo \texttt{uchar\_4}, que se traducen en Java al tipo \texttt{Element.U8\_4}, mientras que la salida contenía pixeles de tipo \texttt{uchar}, que se traducen al tipo \texttt{Element.U8}. El tamaño de las Allocation debe ser definido al momento de crearlas, en este caso ambas Allocations tienen el mismo tamaño, pero RenderScript permite definir Allocations de entrada y salida de distintos tamaños.
+
+Finalmente hay que poblar de datos la Allocation de entrada, correr el script y extraer los datos de la Allocation de salida como muestra el siguiente código:
+
+\begin{lstlisting}[language=Java, frame=bt, numbers=left]
+Bitmap imageRGBA;
+Bitmap imageGray;
+// ... inicializar los bitmaps
+inAllocation.copyFrom(imageRGBA);
+ScriptC_RGBA2Gray script = new ScriptC_RGBA2Gray(rs);
+script.forEach(inAllocation, outAllocation);
+outAllocation.copyTo(imageGray);
+\end{lstlisting}
+
+La clase Allocation cuenta con métodos \texttt{copyFrom} para poblar Allocations a partir de múltiples estructuras de datos como Bitmaps o arreglos numéricos, por otro lado se cuenta con métodos \texttt{copyTo} para extraer los resultados de la Allocation de salida. El método \texttt{forEach} de la clase \texttt{ScriptC\_RGBA2Gray} ejecuta el script sobre las Allocations recibidas.
+
+Se utilizó el framework RenderScript para implementar el cálculo de descriptores en el dispositivo móvil, los detalles de esta implementación se discuten en el capítulo 4 de este informe.
+
 \section{P-VCD}
 \section{Medidas de evaluación}
 
-\lipsum[50-60]
