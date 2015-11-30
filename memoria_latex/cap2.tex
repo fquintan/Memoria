@@ -21,11 +21,11 @@ En términos generales la búsqueda por similitud se refiere a distintos tipos d
 
 Esta memoria se enmarca en el problema de búsqueda por similitud en videos, en particular dado una grabación de un video hecha por un celular, se quiere encontrar el video original. Es evidente que la grabación no será exactamente igual al video original debido a transformaciones de color y perspectiva inherentes a la grabación, sin embargo debiese ser suficientemente similar en contenido para identificar el video original a partir de la grabación. Utilizamos descriptores para medir la similitud de dos videos.
 
-En otras palabras, el problema se reduce a que dado un video de búsqueda $q$, se desea encontrar un video $q'$ en una base de datos que sea similar a $q$. Recordando que un video se describe usando una secuencia de descriptores de imágenes,  
+En otras palabras, el problema se reduce a que dado un video de búsqueda $q$, se desea encontrar un video $q'$ en una base de datos que sea similar a $q$.
+Como se mencionó anteriormente, para comparar videos comparamos sus descriptores, que corresponden a la secuencia de descriptores de imágenes de sus frames 
 
-\subsection{Comparación de descriptores}
-Cada tipo de descriptor se representa como un vector 
-\subsection{Comparación de videos}
+
+%%%%%%%%%%%% RENDERSCRIPT %%%%%%%%%%%%%%%%%%%%%%%%%
 \section{RenderScript}
 Los dispositivos móviles disponen de limitada memoria y capacidad de computo en comparación con un computador de escritorio. Es por esto que para implementar la extracción de descriptores en Android fue necesario buscar alternativas que permitieran hacer uso eficiente de los recursos disponibles, después de investigar se encontró que Android cuenta con un framework propio para aplicaciones que requieran alta capacidad de computo llamada RenderScript \footnote{\url{http://developer.android.com/guide/topics/renderscript/compute.html}}
 
@@ -53,7 +53,8 @@ El código anterior se ejecutará una vez para cada pixel de la imagen de entrad
 
 El caso anterior es simple dado que todos los pixeles son independientes entre sí, por lo que no requiere esfuerzo del programador sincronizar su ejecución. Para casos más complejos RenderScript cuenta con primitivas de sincronización que permiten tener acceso exclusivo a una variable compartida para modificar su valor.
 
-Suponiendo que el código anterior se guarda en el archivo \texttt{RGBA2Gray.rs} al compilar se generará la clase Java \texttt{ScriptC\_RGBA2Gray} con código que permite ejecutar el script. Para ejecutar primero debemos pasar el input a un formato que RenderScript pueda recibir, para esto el framework provee la clase \texttt{Allocation}\footnote{\url{http://developer.android.com/reference/android/renderscript/Allocation.html}}. Una Allocation es un contenedor para los elementos de entrada y salida de un script. Para el ejemplo anterior debemos crear dos Allocations como sigue:
+Suponiendo que el código anterior se guarda en el archivo \texttt{RGBA2Gray.rs} al compilar se generará la clase Java
+\texttt{ScriptC\_RGBA2Gray} con código que permite ejecutar el script. Para ejecutar primero debemos pasar el input a un formato que RenderScript pueda recibir, para esto el framework provee la clase \texttt{Allocation}\footnote{\url{http://developer.android.com/reference/android/renderscript/Allocation.html}}. Una Allocation es un contenedor para los elementos de entrada y salida de un script. Para el ejemplo anterior debemos crear dos Allocations como sigue:
 
 \begin{lstlisting}[language=Java, frame=bt, numbers=left]
 Allocation inAllocation;
@@ -94,6 +95,72 @@ La clase Allocation cuenta con métodos \texttt{copyFrom} para poblar Allocation
 
 Se utilizó el framework RenderScript para implementar el cálculo de descriptores en el dispositivo móvil, los detalles de esta implementación se discuten en el capítulo 4 de este informe.
 
+%%%%%%%%%%%% PVCD %%%%%%%%%%%%%%%%%%%%%%%%%
 \section{P-VCD}
+%Por qué?
+P-VCD es un software de detección de copias en video \cite{p-vcd1}, es decir, detecta segmentos de video similares dentro de una colección. Fue implementado como parte de una tesis de doctorado y fue probado participando en la competencia de Content-based copy detection de TRECVID en 2010 y 2011 \cite{p-vcd2}.
+
+P-VCD logra detectar videos similares siguiendo el siguiente algoritmo:
+\begin{enumerate}
+\item Calcular descriptores para una base de datos de videos. El programa cuenta con múltiples tipos de descriptores tanto locales como globales que pueden ser utilizados. Se guardan en distintos archivos tanto los descriptores como la información de que frame representa cada descriptor.
+\item Dado un video de consulta se calculan y guardan sus descriptores.
+\item Para cada descriptor del video de consulta se encuentran en la base de datos sus vecinos más cercanos, esto es, los descriptores que tengan menor distancia al descriptor de consulta según una función de distancia apropiada, como lo es por ejemplo la distancia euclideana entre vectores.
+\item Usando los vecinos más cercanos encontrados, se usa la información de a que frame y a que video corresponden para identificar secuencias donde los vecinos más cercanos correspondan a una secuencia creciente de frames del mismo video. Si se encuentra tal secuencia se guarda información del video original y de la ubicación de la secuencia de frames. Pueden encontrarse múltiples posibles copias para una mismo video de consulta, así como se puede no encontrar ningún candidato a copia. 
+\end{enumerate}
+
+El programa está construido de manera modular de forma que cada etapa del proceso de búsqueda se puede realizar independiente de las otras, esto hace que P-VCD sea útil para el desarrollo de esta memoria, pues se puede crear e indexar una base de datos de videos de forma offline, para luego saltarse la etapa de extracción de descriptores del objeto de búsqueda, entregándole al sistema los descriptores calculados por otro programa y formateados de la misma manera y prosiguiendo a la etapa de detección de copias.
+
+P-VCD se invoca usando comandos de consola para cada etapa del proceso de búsqueda. A continuación se detallan los comandos necesarios para realizar la extracción de descriptores y la búsqueda de videos similares.
+
+Suponiendo que todos los videos que se utilizarán como referencia están ubicados en el directorio \texttt{videos\_dir}, se procede a inicializar una base de datos con el comando:
+\begin{lstlisting}[style=BashInputStyle]
+    > pvcd_db -new -db database videos_dir
+\end{lstlisting}
+
+Este comando crea el directorio \texttt{database} que contiene el archivo \texttt{files.txt}, este archivo contiene información de todos los videos encontrados en \texttt{videos\_dir}, como sus dimensiones, tipo de archivo, cantidad de frames, etc. De ahora en adelante para trabajar con los videos basta referenciar la base de datos \texttt{database}. El paso siguiente es calcular una segmentación con el comando:
+\begin{lstlisting}[style=BashInputStyle]
+    > pvcd_db -segment -db database -seg SEGCTE_0.25
+\end{lstlisting}
+La segmentación define el conjunto de frames que se usará para describir cada video, en el ejemplo anterior se extraen frames a intervalos regulares de 0.25 segundos. Como resultado de este comando se crea el directorio \texttt{segmentations} dentro de \texttt{database}, que contiene un archivo de texto con extensión .seg por cada video de la base de datos. Cada línea del archivo .seg contiene el momento exacto al cual corresponde el frame extraído dentro del video original.
+El siguiente paso es calcular los descriptores, para esto se usa el comando:
+\begin{lstlisting}[style=BashInputStyle]
+    > pvcd_db -extract -db database -seg SEGCTE_0.25 -desc [DESCRIPTOR] -alias [ALIAS]
+\end{lstlisting}
+
+Este comando utiliza la segmentación creada anteriormente para calcular descriptores a cada frame seleccionado, el parámetro \texttt{[DESCRIPTOR]} corresponde a la definición de alguno de los descriptores disponibles en P-VCD, mientras que \texttt{[ALIAS]} corresponde a un parámetro opcional que puede usarse para renombrar un descriptor, de ahora en adelante se puede referir al descriptor usando su alias. Como resultado del comando anterior se crea un directorio \texttt{descriptors} dentro de \texttt{database}, que contiene un archivo binario de extensión .bin para cada video de la base de datos. Cada archivo .bin contiene todos los descriptores calculados para el video correspondiente. Con esto ya tenemos calculados los descriptores de la base de datos.\\
+
+Para iniciar una búsqueda el primer paso es repetir los pasos anteriores para el video de consulta, con los comandos:
+\begin{lstlisting}[style=BashInputStyle]
+    > pvcd_db -new -db database video_de_consulta.mp4
+    > pvcd_db -segment -db consulta -seg SEGCTE_0.25
+    > pvcd_db -extract -db consulta -seg SEGCTE_0.25 -desc [DESCRIPTOR] -alias [ALIAS]
+\end{lstlisting}
+Cabe destacar que el tipo de descriptor y el alias deben ser iguales a los usados anteriormente para poder realizar la búsqueda. El siguiente paso es crear un perfil del búsqueda
+\begin{lstlisting}[style=BashInputStyle]
+    > pvcd_search -new -profile perfil -query consulta
+        -reference database -desc [ALIAS] -distance L2
+\end{lstlisting}
+Este ejemplo crea un nuevo perfil de consulta, que usará la base de datos ubicada en \texttt{database} como referencia y la ubicada en \texttt{consulta} como objeto de consulta, se usará el descriptor renombrado como \texttt{[ALIAS]} para la búsqueda y la distancia \texttt{L2} (distancia euclideana) como función de distancia. Seguido esto podemos ejecutar la búsqueda de vecinos más cercanos para cada descriptor:
+\begin{lstlisting}[style=BashInputStyle]
+    > pvcd_search -ss -profile perfil -knn 3
+\end{lstlisting}
+Este comando ejecuta la búsqueda, encontrando para cxada descriptor de la base de datos de consulta, sus tres vecinos más cercanos. Los resultados se guardan por defecto en el archivo de texto \texttt{ss,segments-knn\_3.txt} del directorio \texttt{perfil}. El paso final es encontrar secuencias entre los vecinos más cercanos usando el comando:
+\begin{lstlisting}[style=BashInputStyle]
+    > pvcd_detect -detect -ss "perfil\ss,segments-knn\_3.txt"
+        -minLength 1s -out "perfil\detections.txt"
+\end{lstlisting}
+Con este comando se puede especificar el archivo que contiene los vecinos más cercanos, así como un archivo de salida donde se escribirá la información de los candidatos a copia detectados. También se puede especificar con el parámetro \texttt{minLength} mínimo largo que debe tener una secuencia de frames del mismo video para ser considerado un candidato a copia. Después de ejecutar esta serie de comandos el archivo \texttt{detections.txt} contendrá los candidatos a copia.
+
+De la descripción anterior podemos ver que el proceso de búsqueda de P-VCD está separado en etapas autocontenidas, cualquiera de las cuales puede ser fácilmente reemplazada por otro programa que obtenga los mismos resultados, siempre y cuando se respete el formato de los archivos de entrada y salida de cada etapa. Esto fue especialmente útil para el desarrollo de la memoria, pues permitió realizar el cálculo de descriptores del video de consulta de forma independiente, integrando los resultados de este cálculo con las siguientes etapas de la búsqueda sin mayores problemas. 
+
+
+
+
+
+
+
+
+
+
 \section{Medidas de evaluación}
 
