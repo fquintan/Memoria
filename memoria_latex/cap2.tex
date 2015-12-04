@@ -24,6 +24,31 @@ Esta memoria se enmarca en el problema de búsqueda por similitud en videos, en 
 En otras palabras, el problema se reduce a que dado un video de búsqueda $q$, se desea encontrar un video $q'$ en una base de datos que sea similar a $q$.
 Como se mencionó anteriormente, para comparar videos comparamos sus descriptores, que corresponden a la secuencia de descriptores de imágenes de sus frames 
 
+\section{Android}
+Android es un sistema operativo desarrollado por Google, es principalmente usado en dispositivos móviles como smartphones y tablets. Las aplicaciones para Android son programas escritos en el lenguaje de programación Java que hacen uso de las bibliotecas del \emph{Software Development Kit} (SDK) de Android para realizar llamadas al sistema operativo. Esta sección presenta brevemente conceptos del sistema Android necesarios para entender la implementación del trabajo realizado.
+
+\subsection*{Actividades y Fragmentos}
+
+Una actividad corresponde a cualquier clase que extienda de la clase Activity \footnote{\url{http://developer.android.com/guide/components/activities.html}} o alguno de sus descendientes, asimismo un fragmento corresponde a clases que extiendan de Fragment \footnote{\url{http://developer.android.com/guide/components/fragments.html}}. Las actividades y fragmentos controlan elementos de la interfaz gráfica de la aplicación.
+%diferencia entre los dos?
+
+La vista de la interfaz gráfica se define usando archivos XML que especifican los elementos individuales de la interfaz, como botones o imágenes, sus posiciones y tamaños. Mientras que su comportamiento ....
+\TODO{Explicar fragmentos acá para poder usarlos después}
+\subsection*{Comunicación entre aplicaciones}
+
+Existen ciertos procesos que pueden ser necesarios para diversos tipos de aplicaciones, como por ejemplo mostrar los archivos de una carpeta para que el usuario elija uno, o reproducir un archivo de video. Si bien es posible que cada aplicación implemente su propia solución a estos problemas un dispositivo Android usualmente cuenta con aplicaciones predefinidas que realizan estos procesos. Cuando una aplicación requiere tales procesos puede realizar una llamada al sistema que invoque una aplicación predefinida y, una vez se obtenga un resultado (se seleccionó un archivo, se reprodujo el video, etc) se le entregan los resultados de vuelta a la aplicación original. Esta llamada se realiza a través de un objeto \emph{Intent}\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}}, que representa una descripción abstracta del trabajo que se quiere realizar. Android provee una lista de intents estándar para acciones comunes. 
+El siguiente código muestra como se puede invocar la aplicación por de la cámara para grabar un video y guardarlo a archivo:
+\begin{lstlisting}
+    Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+    videoFile = getOutputFile();
+
+    intent.putExtra(MediaStore.EXTRA_OUTPUT, videoFile);
+    intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 5);
+
+    startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
+\end{lstlisting}
+
+En la primera línea se selecciona el intent apropiado. Es posible agregarle opciones dependiendo de la acción requerida, en el ejemplo se especifica el archivo de salida y la duración máxima del video. Finalmente se invoca la aplicación usando el método \texttt{startActivityForResult} que revibe al intent y un código que identifica a la aplicación original. Para obtener el resultado de la acción basta implementar el método \texttt{onActivityResult} que será llamado automáticamente por el sistema.  
 
 %%%%%%%%%%%% RENDERSCRIPT %%%%%%%%%%%%%%%%%%%%%%%%%
 \section{RenderScript}
@@ -152,15 +177,6 @@ Este comando ejecuta la búsqueda, encontrando para cxada descriptor de la base 
 Con este comando se puede especificar el archivo que contiene los vecinos más cercanos, así como un archivo de salida donde se escribirá la información de los candidatos a copia detectados. También se puede especificar con el parámetro \texttt{minLength} mínimo largo que debe tener una secuencia de frames del mismo video para ser considerado un candidato a copia. Después de ejecutar esta serie de comandos el archivo \texttt{detections.txt} contendrá los candidatos a copia.
 
 De la descripción anterior podemos ver que el proceso de búsqueda de P-VCD está separado en etapas autocontenidas, cualquiera de las cuales puede ser fácilmente reemplazada por otro programa que obtenga los mismos resultados, siempre y cuando se respete el formato de los archivos de entrada y salida de cada etapa. Esto fue especialmente útil para el desarrollo de la memoria, pues permitió realizar el cálculo de descriptores del video de consulta de forma independiente, integrando los resultados de este cálculo con las siguientes etapas de la búsqueda sin mayores problemas. 
-
-
-
-
-
-
-
-
-
 
 \section{Medidas de evaluación}
 
