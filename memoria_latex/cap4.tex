@@ -38,7 +38,7 @@ El diagrama de la figura~\ref{diagrama_clases_centralizado} muestra las clases d
 	\begin{figure}[!h]
 		\centering
 		\includegraphics[scale=1.6]{imagenes/cap4/diagrama_cliente_centralizado.png}
-		\caption{Diagrama de la arquitectura del sistema distribuido.}
+		\caption{Diagrama de clases del cliente Android cetnralizado.}
 		\label{diagrama_clases_centralizado}
 	\end{figure}
 
@@ -117,13 +117,25 @@ A continuación se detalla la implementación de tanto el cliente Android como e
 A diferencia de la versión anterior del sistema, en esta versión el cliente debe calcular los descriptores del video de consulta y realizar un petición Post al servidor enviando solo los descriptores y no el archivo de video completo. Al igual que la versión centralizada una vez obtenida la respuesta del servidor, debe mostrarle los resultados de la búsqueda al usuario. Se implementó esta versión cambiando el módulo de grabación de la cámara y el de conexión con el servidor, además se añadió un módulo de cálculo de descriptores.
 
 \subsubsection*{Grabación}
-En esta versión ya no es necesario obtener un archivo de video resultante, sino que es necesario realizar un procesamiento del video. Dada esta diferencia se decidió reimplementar este módulo, creando un nuevo fragmento \texttt{CameraPreviewFragment} de manera que se puedan obtener frames de la cámara mientras se graba el video, para poder realizar el cálculo en tiempo real.
+En esta versión ya no es necesario obtener un archivo de video resultante, sino que es necesario realizar un procesamiento del video. Dada esta diferencia se decidió reimplementar este módulo, creando un nuevo fragmento \texttt{CameraPreviewFragment} de manera que se puedan obtener frames de la cámara mientras se graba el video para poder realizar el cálculo en tiempo real.
 
 La interfaz gráfica del fragmento \texttt{CameraPreviewFragment} consta de tres elementos que podemos identificar en la figura~\ref{pantalla_camera_preview}, el preview de la cámara, los cuatro puntos con los que el usuario puede marcar los límites de la pantalla y finalmente un botón para comenzar la grabación. A continuación se detallan aspectos de la implementación de cada uno de estos elementos.
 
-A diferencia de la versión anterior, en que la cámara era manejada por una aplicación predefinida, ahora es necesario manejar los eventos del ciclo de vida de la cámara. Para esto se utilizó la funcionalidad de la clase \texttt{Camera}\footnote{\url{http://developer.android.com/guide/topics/media/camera.html}} de Android. Esta clase permite mostrar un preview y obtener frames para procesarlos en tiempo real. Se programó la clase \texttt{CameraContainer}, que representa un elemento gráfico que contiene el preview. La clase además encapsula las llamadas al sistema operativo necesarias para controlar la cámara, a través de las funciones \texttt{startCameraPreview}, \texttt{stopCameraPreview} y \texttt{releaseCamera}. 
+A diferencia de la versión anterior, en que la cámara era manejada por una aplicación predefinida, ahora es necesario manejar los eventos del ciclo de vida de la cámara. Para esto se utilizó la funcionalidad de la clase \texttt{Camera}\footnote{\url{http://developer.android.com/guide/topics/media/camera.html}} de Android. Esta clase permite mostrar un preview y obtener frames para procesarlos en tiempo real. Se programó la clase \texttt{CameraContainer}, que representa un elemento gráfico que contiene el preview. La clase además encapsula las llamadas al sistema operativo necesarias para controlar la cámara, a través de las funciones \texttt{startCameraPreview}, \texttt{stopCameraPreview} y \texttt{releaseCamera}.
 
-Se programó la clase \texttt{CropView} que controla los cuatro puntos ...
+Se programó la clase \texttt{CropView} que controla los cuatro puntos vistos en la interfaz. Estos puntos permiten al usuario ajustar el video al tamaño de su pantalla, esto permite un mejor desempeño de los descriptores utilizados dado que todo lo grabado corresponde al video de consulta y no a objetos exteriores como el marco de la pantalla. La clase contiene cuatro puntos representados por objetos de la clase \texttt{Point} e implementa el método \texttt{onTouchEvent}, que permite ser notificado por el sistema operativo cuando el usuario toca la pantalla. Cuando esto sucede se verifica si el usuario está arrastrando alguno de los puntos y se ajusta la interfaz gráfica para reflejar el cambio. Al procesar la imagen para calcular sus descriptores se especifica la posición de los cuatro puntos de manera que el cálculo solo considere la sección de la imagen que está dentro de sus límites.
+
+Por último el bóton para iniciar la grabación corresponde a un objeto de la clase \texttt{Button} de Android, al presionar el botón se utiliza el método \texttt{setPreviewCallback} del cameraContainer para registrar un \emph{listener} que será llamado por el sistema cada vez que la cámara obtiene un nuevo frame de video, esto será usado por el siguiente módulo para realizar el cálculo de descriptores. La figura~\ref{diagrama_modulo_captura} muestra un diagrama que detalla las clases utilizadas descritas anteriormente.
+
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=1.6]{imagenes/cap4/diagrama_modulo_captura.png}
+		\caption{Diagrama de clases del módulo de grabación del sistema distribuido.}
+		\label{diagrama_modulo_captura}
+	\end{figure}
+
+
+\subsubsection*{Cálculo de descriptores}
 
 
 
