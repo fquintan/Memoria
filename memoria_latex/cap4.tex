@@ -125,7 +125,9 @@ A diferencia de la versión anterior, en que la cámara era manejada por una apl
 
 Se programó la clase \texttt{CropView} que controla los cuatro puntos vistos en la interfaz. Estos puntos permiten al usuario ajustar el video al tamaño de su pantalla, esto permite un mejor desempeño de los descriptores utilizados dado que todo lo grabado corresponde al video de consulta y no a objetos exteriores como el marco de la pantalla. La clase contiene cuatro puntos representados por objetos de la clase \texttt{Point} e implementa el método \texttt{onTouchEvent}, que permite ser notificado por el sistema operativo cuando el usuario toca la pantalla. Cuando esto sucede se verifica si el usuario está arrastrando alguno de los puntos y se ajusta la interfaz gráfica para reflejar el cambio. Al procesar la imagen para calcular sus descriptores se especifica la posición de los cuatro puntos de manera que el cálculo solo considere la sección de la imagen que está dentro de sus límites.
 
-Por último el bóton para iniciar la grabación corresponde a un objeto de la clase \texttt{Button} de Android, al presionar el botón se utiliza el método \texttt{setPreviewCallback} del cameraContainer para registrar un \emph{listener} que será llamado por el sistema cada vez que la cámara obtiene un nuevo frame de video, esto será usado por el siguiente módulo para realizar el cálculo de descriptores. La figura~\ref{diagrama_modulo_captura} muestra un diagrama que detalla las clases utilizadas descritas anteriormente.
+Por último el bóton para iniciar la grabación corresponde a un objeto de la clase \texttt{Button} de Android, al presionar el botón se utiliza el método \texttt{setPreviewCallback} del cameraContainer para registrar un \emph{listener} que será llamado por el sistema cada vez que la cámara obtiene un nuevo frame de video, esto será usado por el siguiente módulo para realizar el cálculo de descriptores. La interfaz gráfica cambia para reflejar que se están calculando descriptores, el botón de iniciar se reemplaza por una barra de progreso que muestra cuanto tiempo de grabación queda como muestra la figura~\ref{pantalla_calculando_descriptores}.
+
+La figura~\ref{diagrama_modulo_captura} muestra un diagrama que detalla las clases utilizadas descritas anteriormente.
 
 	\begin{figure}[!h]
 		\centering
@@ -134,13 +136,95 @@ Por último el bóton para iniciar la grabación corresponde a un objeto de la c
 		\label{diagrama_modulo_captura}
 	\end{figure}
 
-
 \subsubsection*{Cálculo de descriptores}
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=1.6]{imagenes/cap4/diagrama_clases_descriptores.png}
+		\caption{Diagrama de las clases usadas para modelar descriptores.}
+		\label{diagrama_clases_descriptores}
+	\end{figure}
+La figura~\ref{diagrama_clases_descriptores} muestra las clases que modelan los descriptores. Se creó la clase abstracta \texttt{ImageDescriptor} que corresponde a un descriptor de imágenes genérico, contiene un arreglo de doubles, un timestamp y un frameNumber que identifican el frame al cual corresponde el descriptor. Los métodos abstractos \texttt{getType} y \texttt{getSerializedOptions} son usados para serializar el descriptor al enviarlo al servidor. La clase tiene tres implementaciones concretas que corresponden a los tres tipos de descriptores que el sistema puede calcular.
+
+Por otro lado está la clase \texttt{VideoDescriptor} que representa un descriptor de video, esta clase contiene una lista de descriptores de imágenes y cuenta con los métodos \texttt{addDescriptor} que recibe un descriptor de imagen y lo añade a la lista, y el método \texttt{toJson} que serializa el descriptor en formato JSON para enviarlo al servidor.
 
 
+El cálculo de descriptores de imágenes es realizado por clases que implementan la interfaz \texttt{DescriptorExtractor}. Esta interfaz define el método \texttt{extract}, que recibe el arreglo de bytes con los datos de un frame de video y el timestamp y frameNumber del frame correspondiente y entrega su descriptor de imagen. La figura~\ref{diagrama_clases_extractores} muestra el diagrama de clases con las clases que implementan la interfaz. El diagrama además muestra la clase \texttt{VideoDescriptorExtractor}, esta clase se usa en conjunto con los extractores para cálcular los descriptores de un video.
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=1.6]{imagenes/cap4/diagrama_clases_extractores.png}
+		\caption{Diagrama de clases de extractores de descriptores.}
+		\label{diagrama_clases_extractores}
+	\end{figure}
 
+VideoDescriptorExtractor implementa la interfaz \texttt{PreviewCallback} con lo que se puede registrar para obtener frames de la cámara. Cada frame se recibe como un arreglo de bytes en formato YUV. En este cada pixel se divide en valores de \emph{luma} (Y) que indica la intensidad de luz y \emph{chroma} (UV) que indican el color. Específicamente se usa el formato YUV420 NV21\footnote{\url{http://www.fourcc.org/yuv.php\#NV21}}, que establece un ordenamiento de los valores como indica la figura~\ref{formato_yuv}. Los primeros $W \times H$ bytes corresponden a los valores de \emph{luma} de cada pixel, donde $W$ y $H$ corresponden al ancho y alto de la imagen.  
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=0.3]{imagenes/cap4/yuv.png}
+		\caption{Especificación del formato YUV420 NV21.}
+		\label{formato_yuv}
+	\end{figure}
 
+VideoDescriptorExtractor intenta procesar frames a un ritmo constante de 4 frames por segundo. Al recibir un nuevo frame primero verifica si se está procesando un frame anterior, de ser así se ignora el frame recibido sin procesarlo, de lo contrario se revisa el tiempo transcurrido desde el último frame procesado. Si ha pasado muy poco tiempo desde el último frame (menos de 0.25 segundos) entonces se ignora y se sigue esperando. Para procesar un frame se usa alguno de los extractores definidos en la figura~\ref{diagrama_clases_extractores}, al invocar su método \texttt{extract} se obtiene un objeto de tipo \texttt{ImageDescriptor}, este descriptor de imagen se añade a un descriptor de video mantenido por el VideoDescriptorExtractor usando el método \texttt{addDescriptor} de la clase \texttt{VideoDescriptor}.
 
+A continuación se explica en detalle el funcionamiento de cada extractor de descriptores de imágenes implementado.
+
+%%GRAYHISTOGRAM_EXTRACTOR
+\texttt{GrayHistogramExtractor} maneja el cálculo de histogramas de grises por zona. El algoritmo para calcular el descriptor consiste de cuatro etapas:
+\begin{enumerate}
+\item Transformar imagen de color en formato YUV a escala de grises.
+\item Croppear imagen para ajustarse a los límites establecidos por el usuario.
+\item Calcular histograma, esto es, contar la cantidad de pixeles con cierta intensidad en cada zona.
+\item Normalizar histograma.
+\end{enumerate}
+
+La primera etapa se logra extrayendo los primeros $W\times H$ bytes del arreglo de bytes, donde $W$ y $H$ son el ancho y alto de la imagen, en el formato YUV que usa Android estos corresponden a la intensidad de luz de los pixeles de la imagen, es decir, sus valores de gris. La extracción de bytes se realiza con el método \texttt{copy2DRangeFrom} de la clase \texttt{Allocation} de RenderScript, que recibe un arreglo de bytes, valores de offset horizontal y vertical, alto y ancho de la imagen y extrae los valores del arreglo para poblar una Allocation. Al final de esta etapa se obtiene una Allocation con los valores de gris de la imagen. \\
+
+Para la segunda etapa nuevamente se usa el método \texttt{copy2DRangeFrom}, esta vez se usa una versión del método que recibe una Allocation, y valores de offset, alto y ancho para extraer un subconjunto de valores de la Allocation recibida. Al final de esta etapa se obtiene una nueva Allocation distinta a la de la etapa anterior, que contiene solo los valores de gris de la zona demarcada por el usuario.\\
+
+La tercera etapa requiere el uso de RenderScript para realizar el cómputo. Esto se logró con el script \texttt{GrayZoneHist.rs} que itera sobre cada pixel de la imagen, calcula su bin correspondiente basado en su valor de gris y su posición y aumenta en 1 el valor del bin. Para aumentar el valor del bin se debe usar una primitiva de sincronización, de lo contrario podrían ocurrir \emph{data races} dado que el script se ejecuta en parlelo. Se utilizó la función \texttt{rsAtomicInc} que recibe una dirección de memoria e incrementa su valor en 1 de forma atómica. La allocation de salida del script contiene el histograma sin normalizar. El código del script \texttt{GrayZoneHist.rs} se encuentra adjunto en la sección de Anexos.
+
+En la cuarta etapa primero se extrae el contenido de la Allocation que contiene el histograma y se copia a un arreglo de ints. Esto se logra con el método \texttt{copyTo} de la clase \texttt{Allocation}. Luego se crea un nuevo arreglo de doubles que contendrá el histograma normalizado. Se itera sobre el histograma dividiendo cada valor por la cantidad de pixeles en su zona correspondiente y asignando el resultado al histograma normalizado. Finalmente se crea un objeto \texttt{GaryHistogramDescriptor} con el histograma normalizado y se retorna.
+
+%%KEYFRAME_EXTRACTOR
+\texttt{KeyframeExtractor} maneja el cálculo del descriptor reduced keyframe. El algoritmo para calcularlo toma los siguientes pasos:
+\begin{enumerate}
+\item Transformar imagen de formato YUV a formato RGB.
+\item Croppear imagen para ajustarse a los límites establecidos por el usuario.
+\item Calcular el promedio de color por canal en cada zona.
+\end{enumerate}
+
+El primer paso se logra usando la clase \texttt{ScriptIntrinsicYuvToRGB} de RenderScript. Esta clase pertenece a la biblioteca de RenderScript y permite decodificar una imagen en YUV y pasarla a formato RGB, solo es necesario crear Allocations de entrada y salida del tamaño correspondiente. El resultado es una Allocation que contiene la imagen en formato RGB.
+
+El segundo paso se logra de la misma manera que en el extractor anterior, usando el método \texttt{copy2DRangeFrom} de la clase Allocation. El resultado de este paso es un Allocation que contiene los valore RGB de la sección de la imagen indicada por el usuario.
+
+El tercer paso se realiza usando RenderScript con el script \texttt{keyframe.rs}. Este script itera sobre cada pixel de la imagen y separa el pixel en sus valores de rojo, verde y azul. Cada valor es sumado a un contador correspondiente a su zona. Para realizar esta suma se usó la función \texttt{rsAtomicAdd} de RenderScript que permite realizar sumas de manera atómica. La Allocation de salida contiene la suma de los valores de rojo, verde y azul de los pixeles de cada zona. Para calcular el valor promedio de cada color basta dividir el valor obtenido por el script por la cantidad de pixeles de cada zona. Para esto se extrae el contenido de la Allocation usando el método \texttt{copyTo} al igual que en el extractor anterior. Luego se itera por cada valor y se divide por la cantidad de pixeles de la zona. Finalmente se crea un objeto \texttt{KeyframeDescriptor} y se retorna. El código del script \texttt{keyframe.rs} se encuentra adjunto en la sección de Anexos.
+ 
+%%EDGEHISTOGRAM_EXTRACTOR
+La clase \texttt{EdgeHistogramExtractor} se encarga del cálculo del descriptor de histograma de bordes. Los pasos del algoritmo para el computo son los siguientes:
+\begin{enumerate}
+\item Transformar imagen de color en formato YUV a escala de grises.
+\item Croppear imagen para ajustarse a los límites establecidos por el usuario.
+\item Reducir la imagen a una cantidad fija de bloques, donde el valor de cada zona corresponde al promedio del valor de los pixeles dentro de la zona.
+\item Calcular la energía de cada filtro aplicándolo sobre grupos de cuatro bloques. Se selecciona el mayor y se revisa si la energía correspondiente excede un valor umbral.
+\item Calcular el histograma de bordes, que indica por zona cuantos grupos de bloques presentan cada uno de los tipos de bordes posibles.
+\item Normalizar el histograma.
+\end{enumerate}
+
+Las primeras dos etapa son idénticas a las primeras etapas del cálculo del descriptor de histograma de grises y se realizan de la misma forma. El resultado al final de la segunda etapa es un Allocation con los valores de gris correspondiente a la sección de la imagen seleccionada por el usuario.
+
+La tercer etapa es similar al cálculo del descriptor reduced keyframe y se realiza de forma análoga. El script \texttt{reducer.rs} divide la imagen en bloques e itera sobre cada pixel sumando su valor de gris al de la zona correspondiente. El resultado del script es una Allocation con la suma de los pixeles en cada zona. Al igual que en el descriptor anterior se extraen los resultados a un arreglo usando el método \texttt{copyTo} y se divide cada valor por la cantidad de pixeles por zona, con esto se obtiene un arreglo con el valor de gris promedio en cada zona.
+
+Para la cuarta etapa se toma el arreglo resultante del paso anterior y se usa para poblar una Allocation. Estos datos se usan como entrada para el script \texttt{borderDetector.rs}, que toma grupos de cuatro bloques y calcula el valor de energía de cada filtro, selecciona el mayor y se prueba si pasa el valor umbral. La Allocation de salida contiene un número del 0 al 5 por cada bloque, si el filtro de mayor energía pasó el valor umbral, el valor irá de 0 a 4 indicando el indice del filtro de mayor energía, en caso que el mayor no supere el umbral se marcará con un 5.
+
+La quinta etapa es similar al cálculo de histograma de grises. El script \texttt{edgeHist.rs} itera sobre cada bloque revisando cual fue el filtro de mayor energía, para cada zona se cuenta la cantidad de bloques con cada tipo de borde. Si para algún bloque el valor en la Allocation de entrada es 5 (correspondiente a los bloques en que la energía no excedió el umbral) no se considera para la construcción del histograma. La Allocation de salida contiene el histograma con la cantidad de bloques con cada tipo de borde por zada zona de la imagen.
+
+La última etapa es idéntica a la última etapa de la construcción del descriptor de histograma de grises. Se extraen los valores de la última Allocation a un arreglo y se normaliza dividiendo cada valor por la cantidad de pixeles presentes en cada zona. El arreglo resultante contiene el histograma normalizado, que se usa para construir un objeto \texttt{EdgeHistogramDescriptor} y retornarlo.
+
+Todos los script usados por EdgeHistogramExtractor se adjuntaron en la sección de anexos.\\
+
+El proceso de cálculo de descriptores se realiza por un tiempo determinado por el VideoDescriptorExtractor. Una vez terminado el proceso se procede a enviar el descriptor de video resultante al servidor para realizar una consulta.
+
+\subsubsection*{Conexión con el servidor}
 
 
 \subsection{Servidor}
