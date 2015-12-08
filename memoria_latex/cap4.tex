@@ -177,7 +177,7 @@ A continuación se explica en detalle el funcionamiento de cada extractor de des
 \item Normalizar histograma.
 \end{enumerate}
 
-La primera etapa se logra extrayendo los primeros $W\times H$ bytes del arreglo de bytes, donde $W$ y $H$ son el ancho y alto de la imagen, en el formato YUV que usa Android estos corresponden a la intensidad de luz de los pixeles de la imagen, es decir, sus valores de gris. La extracción de bytes se realiza con el método \texttt{copy2DRangeFrom} de la clase \texttt{Allocation} de RenderScript, que recibe un arreglo de bytes, valores de offset horizontal y vertical, alto y ancho de la imagen y extrae los valores del arreglo para poblar una Allocation. Al final de esta etapa se obtiene una Allocation con los valores de gris de la imagen. \\
+La primera etapa se logra extrayendo los primeros $W\times H$ bytes del arreglo de bytes, donde $W$ y $H$ son el ancho y alto de la imagen, en el formato YUV utilizado por Android estos corresponden a la intensidad de luz de los pixeles de la imagen, es decir, sus valores de gris. La extracción de bytes se realiza con el método \texttt{copy2DRangeFrom} de la clase \texttt{Allocation} de RenderScript, que recibe un arreglo de bytes, valores de offset horizontal y vertical, alto y ancho de la imagen y extrae los valores del arreglo para poblar una Allocation. Al final de esta etapa se obtiene una Allocation con los valores de gris de la imagen. \\
 
 Para la segunda etapa nuevamente se usa el método \texttt{copy2DRangeFrom}, esta vez se usa una versión del método que recibe una Allocation, y valores de offset, alto y ancho para extraer un subconjunto de valores de la Allocation recibida. Al final de esta etapa se obtiene una nueva Allocation distinta a la de la etapa anterior, que contiene solo los valores de gris de la zona demarcada por el usuario.\\
 
@@ -216,7 +216,7 @@ La tercer etapa es similar al cálculo del descriptor reduced keyframe y se real
 
 Para la cuarta etapa se toma el arreglo resultante del paso anterior y se usa para poblar una Allocation. Estos datos se usan como entrada para el script \texttt{borderDetector.rs}, que toma grupos de cuatro bloques y calcula el valor de energía de cada filtro, selecciona el mayor y se prueba si pasa el valor umbral. La Allocation de salida contiene un número del 0 al 5 por cada bloque, si el filtro de mayor energía pasó el valor umbral, el valor irá de 0 a 4 indicando el indice del filtro de mayor energía, en caso que el mayor no supere el umbral se marcará con un 5.
 
-La quinta etapa es similar al cálculo de histograma de grises. El script \texttt{edgeHist.rs} itera sobre cada bloque revisando cual fue el filtro de mayor energía, para cada zona se cuenta la cantidad de bloques con cada tipo de borde. Si para algún bloque el valor en la Allocation de entrada es 5 (correspondiente a los bloques en que la energía no excedió el umbral) no se considera para la construcción del histograma. La Allocation de salida contiene el histograma con la cantidad de bloques con cada tipo de borde por zada zona de la imagen.
+La quinta etapa es similar al cálculo de histograma de grises. El script \texttt{edgeHist.rs} itera sobre cada bloque revisando cual fue el filtro de mayor energía, para cada zona se cuenta la cantidad de bloques con cada tipo de borde. Si para algún bloque el valor en la Allocation de entrada es 5 (correspondiente a los bloques en que la energía no excedió el umbral) no se considera para la construcción del histograma. La Allocation de salida contiene el histograma con la cantidad de bloques con cada tipo de borde por cada zona de la imagen.
 
 La última etapa es idéntica a la última etapa de la construcción del descriptor de histograma de grises. Se extraen los valores de la última Allocation a un arreglo y se normaliza dividiendo cada valor por la cantidad de pixeles presentes en cada zona. El arreglo resultante contiene el histograma normalizado, que se usa para construir un objeto \texttt{EdgeHistogramDescriptor} y retornarlo.
 
@@ -225,6 +225,16 @@ Todos los script usados por EdgeHistogramExtractor se adjuntaron en la sección 
 El proceso de cálculo de descriptores se realiza por un tiempo determinado por el VideoDescriptorExtractor. Una vez terminado el proceso se procede a enviar el descriptor de video resultante al servidor para realizar una consulta.
 
 \subsubsection*{Conexión con el servidor}
+ El módulo de conexión con el servidor es análogo al de la versión anterior. Se implementó la clase \texttt{FromDescriptorsVideoSearch} que maneja el envío de datos al servidor. A diferencia de la versión anterior esta clase recibe un objeto de la clase \texttt{VideoDescriptor} para reapizar la búsqueda. El descriptor de video puede ser serializado con su método \texttt{toJson}, este método usa los métodos \texttt{getType} y \texttt{getSerializedOptions} de los descriptores de imágenes para obtener propiedades del descriptor necesarias para la búsqueda como el tipo de descriptor y su tamaño. Una vez serializado se envía al servidor usando la clase \texttt{HttpUrlConnection} de Java. Al igual que la versión anterior una vez se termina de enviar datos al servidor se cambia la interfaz gráfica de la aplicación, a una pantalla inicialmente vacía donde se mostrarán los resultados.
 
+\subsubsection*{Interfaz de resultados}
+Este módulo no presenta diferencias con respecto a la versión anterior, se reutilizó la clase \texttt{QueryResultsFragment} para mostrar los resultados obtenidos del servidor.\\
 
+La figura~\ref{diagrama_cliente_distribuido} muestra un diagrama de clases resumido con las clases que componen la versión distribuida del cliente.
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=1.6]{imagenes/cap4/diagrama_cliente_distribuido.png}
+		\caption{Diagrama de clases del cliente distribuido.}
+		\label{diagrama_cliente_distribuido}
+	\end{figure}
 \subsection{Servidor}
