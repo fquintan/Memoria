@@ -9,31 +9,33 @@ En este capítulo se presentan conceptos teóricos necesarios para la comprensi�
 \item Video: Corresponde a una secuencia de imágenes (de aquí en adelante \textit{frames}) presentadas cada cierto intervalo de tiempo regular (por ejemplo 24 \textit{frames} cada segundo). 
 \end{enumerate}
 
+
+\section{Detección de copia basada en contenido}
+
+La detección de copia basada en contenido o \emph{Content Based Copy Detection} (CBCD) se define como: \\
+Sea $V$ una colección de documentos multimedia (imágenes, audio, video) y sea $q$ un documento de búsqueda. Una \emph{detección de copia basada en contenido} consiste en encontrar y recuperar todos los documentos $v \in V$ de la colección tales que $q$ ``es una copia'' de $v$
+
+\TODO{Usar el ambiente de definiciones}
+
+En el contexto de esta memoria los documentos corresponden a videos, y la relación ``es una copia'' se refiere a que el video de consulta corresponde a una grabación del video original.
+
+Para establecer si dos videos cumplen la relación de copia es necesario tener una manera de comparar su contenido. Es muy probable que la grabación no sea idéntica al video original debido a transformaciones de color y perspectiva inherentes a la grabación, sin embargo es posible comparar los videos por las \textit{características} presentes en ellos, como sus colores, formas, etc. Esta comparación de características se realiza por medio de \emph{descriptores}.
+
 \section{Descriptores}
 Un \emph{descriptor} de imagen es una forma representar dicha imagen por sus características (como su distribución de colores, orientación de bordes, textura, etc). Los descriptores son usualmente representados como vectores multidimensionales. Para compararlos es común usar una función de distancia, como por ejemplo la distancia euclideana entre vectores.
+
 El descriptor de una imagen puede ser global o local dependiendo de si describe la imagen completa o solo sectores de ella. \\
 Dado que un video es una secuencia de imágenes se puede describir usando una secuencia de descriptores de imágenes, para hacer esto típicamente se submuestrean loas frames del video, es decir, aunque el video muestre 24 frames por segundo, se pueden considerar solo 2 cada segundo para describir el video. Esto funciona debido que en la mayoría de los casos dos frames consecutivos son muy similares entre sí, por lo que tomar todos los frames del video para describirlo aporta información redundante.\\
 Es necesario comparar videos o imágenes utilizando descriptores en vez de comparar sus archivos bit a bit debido a que se pueden realizar transformaciones sobre una imagen que cambien totalmente los bits de su archivo sin modificar mucho el contenido de esta, como por ejemplo iluminar la imagen sumándole un valor fijo al valor de todos sus pixeles.
-
-\section{Búsqueda por similitud}
-
-En términos generales la búsqueda por similitud se refiere a distintos tipos de búsqueda sobre espacios donde la única comparación válida entre objetos es su similitud, esto ocurre típicamente sobre tipos de datos complejos que carecen de un ordenamiento natural, como es el caso de los videos.
-
-Esta memoria se enmarca en el problema de búsqueda por similitud en videos, en particular dado una grabación de un video hecha por un celular, se quiere encontrar el video original. Es evidente que la grabación no será exactamente igual al video original debido a transformaciones de color y perspectiva inherentes a la grabación, sin embargo debiese ser suficientemente similar en contenido para identificar el video original a partir de la grabación. Utilizamos descriptores para medir la similitud de dos videos.
-
-En otras palabras, el problema se reduce a que dado un video de búsqueda $q$, se desea encontrar un video $q'$ en una base de datos que sea similar a $q$.
-Como se mencionó anteriormente, para comparar videos comparamos sus descriptores, que corresponden a la secuencia de descriptores de imágenes de sus frames 
 
 \section{Android}
 Android es un sistema operativo desarrollado por Google, es principalmente usado en dispositivos móviles como smartphones y tablets. Las aplicaciones para Android son programas escritos en el lenguaje de programación Java que hacen uso de las bibliotecas del \emph{Software Development Kit} (SDK) de Android para realizar llamadas al sistema operativo. Esta sección presenta brevemente conceptos del sistema Android necesarios para entender la implementación del trabajo realizado.
 
 \subsection*{Actividades y Fragmentos}
 
-Una actividad corresponde a cualquier clase que extienda de la clase Activity\footnote{\url{http://developer.android.com/guide/components/activities.html}} o alguno de sus descendientes, asimismo un fragmento corresponde a clases que extiendan de Fragment\footnote{\url{http://developer.android.com/guide/components/fragments.html}}. Las actividades y fragmentos controlan elementos de la interfaz gráfica de la aplicación.
-%diferencia entre los dos?
+Una actividad corresponde a cualquier clase que extienda de la clase Activity\footnote{\url{http://developer.android.com/guide/components/activities.html}} o alguno de sus descendientes, asimismo un fragmento corresponde a clases que extiendan de Fragment\footnote{\url{http://developer.android.com/guide/components/fragments.html}}. Las actividades y fragmentos controlan elementos de la interfaz gráfica de la aplicación. La vista de la interfaz gráfica es definida usando XML para especificar los elementos de la interfaz y sus posiciones. El comportamiento en cambio se controla desde actividades y fragmentos, que asignan métodos \emph{listener} a los distintos elementos de la interfaz. 
+En general se usa una actividad para manejar un proceso dentro de la aplicación y varios fragmentos se encargan cada uno de una etapa del proceso.
 
-La vista de la interfaz gráfica se define usando archivos XML que especifican los elementos individuales de la interfaz, como botones o imágenes, sus posiciones y tamaños. Mientras que su comportamiento ....
-\TODO{Explicar fragmentos acá para poder usarlos después}
 \subsection*{Comunicación entre aplicaciones}
 
 Existen ciertos procesos que pueden ser necesarios para diversos tipos de aplicaciones, como por ejemplo mostrar los archivos de una carpeta para que el usuario elija uno, o reproducir un archivo de video. Si bien es posible que cada aplicación implemente su propia solución a estos problemas un dispositivo Android usualmente cuenta con aplicaciones predefinidas que realizan estos procesos. Cuando una aplicación requiere tales procesos puede realizar una llamada al sistema que invoque una aplicación predefinida y, una vez se obtenga un resultado (se seleccionó un archivo, se reprodujo el video, etc) se le entregan los resultados de vuelta a la aplicación original. Esta llamada se realiza a través de un objeto \emph{Intent}\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}}, que representa una descripción abstracta del trabajo que se quiere realizar. Android provee una lista de intents estándar para acciones comunes. 
@@ -47,6 +49,7 @@ El siguiente código muestra como se puede invocar la aplicación por de la cám
 
     startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
 \end{lstlisting}
+\TODO{Codigo lindo}
 
 En la primera línea se selecciona el intent apropiado. Es posible agregarle opciones dependiendo de la acción requerida, en el ejemplo se especifica el archivo de salida y la duración máxima del video. Finalmente se invoca la aplicación usando el método \texttt{startActivityForResult} que revibe al intent y un código que identifica a la aplicación original. Para obtener el resultado de la acción basta implementar el método \texttt{onActivityResult} que será llamado automáticamente por el sistema.  
 
@@ -177,6 +180,3 @@ Este comando ejecuta la búsqueda, encontrando para cxada descriptor de la base 
 Con este comando se puede especificar el archivo que contiene los vecinos más cercanos, así como un archivo de salida donde se escribirá la información de los candidatos a copia detectados. También se puede especificar con el parámetro \texttt{minLength} mínimo largo que debe tener una secuencia de frames del mismo video para ser considerado un candidato a copia. Después de ejecutar esta serie de comandos el archivo \texttt{detections.txt} contendrá los candidatos a copia.
 
 De la descripción anterior podemos ver que el proceso de búsqueda de P-VCD está separado en etapas autocontenidas, cualquiera de las cuales puede ser fácilmente reemplazada por otro programa que obtenga los mismos resultados, siempre y cuando se respete el formato de los archivos de entrada y salida de cada etapa. Esto fue especialmente útil para el desarrollo de la memoria, pues permitió realizar el cálculo de descriptores del video de consulta de forma independiente, integrando los resultados de este cálculo con las siguientes etapas de la búsqueda sin mayores problemas. 
-
-\section{Medidas de evaluación}
-
