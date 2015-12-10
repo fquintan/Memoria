@@ -5,8 +5,6 @@ En ambas versiones del sistema el cliente corresponde a una aplicación Android 
 
 El capítulo se divide en una sección para la alternativa centralizada y otra para la distribuida. A su vez cada sección se divide en la implementación del cliente Android y el servidor.
 
-\TODO{Pensar en mejores nombres para los sistemas alternativos}
-
 
 \section{Sistema Centralizado}
 
@@ -98,6 +96,9 @@ def search_by_video_file():
       return jsonify(detections=detections)
 \end{lstlisting}
 Primero se verifica que la petición sea de tipo Post y que se haya recibido un video con formato válido. Luego la función ejecuta secuencialmente los pasos de la búsqueda y retorna los resultados usando la función \texttt{jsonify} de Flask, que codifica una lista de Python como JSON.
+
+
+Esta versión del sistema destaca por su simplicidad y facilidad de implementar. Además el sistema resultante es flexible, puesto que tiene a su disposición todos los descriptores disponibles en P-VCD y solo se requieren cambios de configuración del servidor para cambiar el descriptor usado por el sistema. Sin embargo esta arquitectura presenta dos grandes problemas, por un lado enviar el video completo al servidor significa un considerable gasto de la red de datos del dispositivo. Por otro lado, el realizar todas las operaciones en el servidor se crea un posible cuello de botella que limita la escalabilidad del sistema. Ambos problemas se originan por el uso ineficiente de los recursos computacionales del sistema. No se está aprovechando la capacidad de computo del dispositivo móvil, en la siguiente sección se propone una arquitectura alternativa que busca solucionar estos problemas.
 
 
 \section{Sistema Distribuido}
@@ -237,4 +238,29 @@ La figura~\ref{diagrama_cliente_distribuido} muestra un diagrama de clases resum
 		\caption{Diagrama de clases del cliente distribuido.}
 		\label{diagrama_cliente_distribuido}
 	\end{figure}
+
 \subsection{Servidor}
+
+La implementación de la versión distribuida del servidor es análoga a la versión centralizada. Se creó la función \texttt{search\_by\_descriptors} que sirve la URL usada por el cliente para enviar los descriptores. Se reutilizaron las funciones \texttt{new\_search\_profile}, \texttt{search} y \texttt{detect} del módulo \texttt{PVCD\_Wrapper}. 
+
+Dado que esta versión recibe los descriptores en vez del video completo basta con guardar los descriptores con el formato apropiado para realizar la búsqueda. Además de esto es necesario crear los archivos que identifican la base de datos del video de búsqueda, ya que a pesar que el video no está en el servidor (ni se utiliza en ningún paso de la búsqueda) P-VCD exige que exista una base de datos con su correspondiente segmentación. Se crearon funciones que imitan el funcionamiento de P-VCD, creando una base de datos, una segmentación y un archivo de descriptores a partir de la información recibida por el servidos. A continuación se describen las nuevas funciones implementadas.
+
+\begin{itemize}
+
+\item{\texttt{create\_database}} 
+
+Esta función crea una base de datos vacía. Crea una carpeta con un archivo \texttt{files.txt}, normalmente este archivo contiene información del video, como la ruta a su archivo, tipo de archivo, etc. Esta información es usada por P-VCD para extraer la segmentación y los descriptores. Dado que estas operaciones no son necesarias en esta versión del sistema se puede crear el archivo \texttt{files.txt} con los headers apropiados pero con sin información. 
+
+\item{\texttt{create\_segmentation}} 
+
+Al crear una segmentación P-VCD extrae información de cuales frames serán usados por el sistema para calcular descriptores. Se especifica el número del frame correspondiente y el instante en que este aparece en el video. Toda la información necesaria para crear la 
+segmentación es enviada al servidor junto con los descriptores del video. El cliente envía una lista con los números de frame y el instante en que aparecieron, la función usa esta información para crear el archivo \texttt{query.seg} requerido por el sistema. 
+
+\item{\texttt{write\_descriptors}} 
+
+Los descriptores requieren dos archivos, uno con información sobre el tipo de descriptor y sus parámetros, y otro con los valores del descriptor mismo. La función crea ambos archivos, el primero, \texttt{descriptor.des}, se escribe con la información recibida desde el cliente con las opciones del descriptor. El archivo \texttt{query.bin} corresponde al contenido de los descriptores, este se escribe usando la clase \texttt{array} de Python, esta clase permite escribir un arreglo numérico en un archivo binario con la función \texttt{to\_file}.  
+\end{itemize}
+
+La función \texttt{search\_by\_descriptors} ejecuta las tres nuevas funciones para crear los archivos necesarios para la búsqueda. Después de esto la búsqueda procede idénticamente a la versión anterior.
+
+Esta versión del sistema soluciona los problemas expuestos en la sección anterior. Al enviar solo los descriptores de video al servidor se disminuye significativamente el uso de la red de datos, lo cual además reduce el tiempo de respuesta del sistema. Por otro lado se disminuye la carga del servidor al realizar la extracción de descriptores en el dispositivo móvil. En el siguiente capítulo se exponen las pruebas realizadas con el sistema, que buscan determinar empíricamente las diferencias entre ambas versiones del sistema en términos de tiempo de respuesta y uso de recursos del sistema. Además se busca comparar la eficacia de los descriptores usados para realizar la búsqueda. 
