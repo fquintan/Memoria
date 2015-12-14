@@ -1,7 +1,7 @@
-\chapter{Evaluación Experimental}
+\chapter{Evaluación Experimental} \label{evaluacion}
 En este capítulo se divide en dos secciones, en la primera se describen los experimentos realizados para medir la eficiencia y eficacia de los sistemas implementados. En la segunda parte se muestran los resultados obtenidos.
 
-\section{Dataset y Experimentos}
+\section{Dataset y Experimentos}\label{experimentos}
 Para probar el sistema se recopiló una colección de videos correspondientes a películas de dominio público. Las peliculas fueron descargadas de un canal de Youtube que se especializa en subir recolectar y subir películas de dominio público\footnote{https://www.youtube.com/user/BestPDMovies}. En total se descargaron 119 películas que corresponden a alrededor de 110 horas de video. El dataset contiene películas publicadas desde 1920 y hasta la década de 1970 cuya protección de derechos de autor expiró, además de algunas más recientes que renunciaron a tales derechos. Debido a esto el dataset presenta videos con un amplio rango de tamaños y calidad de video, además de contener tanto filmes a color como en blanco y negro. 
 
 Para comparar la eficacia de los distintos descriptores se usó la versión distribuida de la aplicación. Esto debido que es la que cuenta con el preprocesamiento encargado de ajustar el video a los límites indicados por el usuario, sin esto los descriptores globales no pueden funcionar para videos de tamaño indeterminado, como en la base de datos recopilada.
@@ -15,10 +15,8 @@ El tiempo de respuesta se midió como el intervalo de tiempo desde que el client
 \displaystyle{Tiempo\ total\ de\ respuesta}  =  \displaystyle{Tiempo\ de\ transmisi\acute{o}n} + \displaystyle{Tiempo\ total\ del\ servidor} 
 \end{equation*}
 
-\section{Resultados}
+\section{Resultados}\label{resultados}
 A continuación se presentan los resultados de los experimentos realizados y su interpretación. 
-
-
 
 \subsection{Eficacia}
 

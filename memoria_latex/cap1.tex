@@ -1,16 +1,18 @@
-\chapter{Introducción}
+\chapter{Introducción} \label{intro}
 
-\section{Motivación}
+\section{Motivación} \label{motivacion}
 
 Día a día crece la cantidad de contenido audiovisual disponible gracias en parte a la televisión y por otro lado a la proliferación de medios de captura de video de bajo costo y a la creciente oferta de servicios de almacenamiento de video en internet como Youtube o Vimeo.
 Sin embargo, gran parte de este contenido no está etiquetado, es decir, no presenta metadatos que faciliten su rápida identificación. 
 
+Para buscar dentro de colecciones de video no etiquetadas comúnmente se usa el enfoque de búsqueda por similitud. Este tipo de búsqueda se basa en comparar (esto es, medir cuanto se parecen) dos videos. Para medir esta similitud se utilizan \emph{descriptores}, que son vectores que representan características del contenido un video y bajo los cuales las comparaciones están definidas, mediante funciones de distancia.
 
+La masificación de los \emph{smartphones} o teléfonos inteligentes aportan al aumento de la cantidad de videos no etiquetados, pero por otro lado pueden ofrecernos una solución para su identificación. Estos dispositivos permiten grabar videos fácilmente y recientemente han aumentado su poder de computo de tal manera que les hace posible realizar tareas previamente relegadas a computadores de escritorio.
 
-La presente memoria se enmarca dentro del siguiente problema: identificar la \emph{fuente} de un segmento de video a partir de su contenido utilizando una detección de copias. El objetivo planteado es que un usuario pueda grabar parte del video no etiquetado usando su celular y, a través de una detección de copias, identificar el video. 
+La presente memoria se enmarca dentro del siguiente problema: identificar la \emph{fuente} de un segmento de video a partir de su contenido utilizando una búsqueda por similitud. El objetivo planteado es que un usuario pueda grabar parte del video no etiquetado usando su celular y, a través de una búsqueda por similitud, identificar el video. 
 Adicionalmente se desea probar diversas implementaciones del sistema para medir sus diferencias en términos de eficiencia (uso de recursos como la red de datos y el tiempo de procesamiento) y eficacia (habilidad para retornar resultados correctos).
 
-\section{Objetivos}
+\section{Objetivos} \label{objetivos}
 
 El objetivo general de esta memoria es implementar un sistema de búsqueda de videos en donde un usuario graba un video corto con un dispositivo móvil, luego se comunica con un servidor de consultas que identifique la fuente del video y le comunique sus resultados de vuelta a la aplicación. Se propone implementar el cálculo de descriptores de video para la búsqueda en el dispositivo móvil y comparar su eficiencia y uso de recursos con la alternativa de enviar el video completo para ser procesado por el servidor. Se desea además implementar distintos tipos de descriptores y evaluar su eficacia para reconocer el video de búsqueda.
 
@@ -35,6 +37,12 @@ Para conseguir el objetivo principal de la memoria se pueden detallar varios obj
 \end{itemize}
 
 \section{Estructura de la memoria}
+El capítulo \ref{intro} contiene la seccion \ref{motivacion}, que presenta una breve introducción y motivación de los problemas relevantes para la memoria, y la sección \ref{objetivos} donde se detalla el objetivo principal y una lista de objetivos específicos de esta memoria.
+El capítulo \ref{conceptos} define conceptos útiles en \ref{definiciones}, para luego detallar el funcionamiento de la detección de copias en \ref{copias} y las descriptores de video en \ref{descriptores}, finalmente se describen los programas y herramientas usadas, en \ref{android} se describe el sistema Android, en \ref{renderscript} el framework RenderScript y en \ref{pvcd} el programa P-VCD.
+El capítulo \ref{cap_descriptores} expone los descriptores escogidos para implementar en esta memoria, ``Histograma de grises por zona'' en \ref{ghd}, ``Reduced Keyframe'' en \ref{kfd} e ``Histograma de bordes'' en \ref{ehd}.
+En el capítulo \ref{implementacion} se detalla la implementación del sistema, se divide dos secciones para describir las alternativas de arquitectura del sistema, una centralizada \ref{central} y otra distribuida \ref{distr}.
+El capítulo \ref{evaluacion} describe los experimentos realizados para evaluar el sistema en \ref{experimentos}, para luego mostrar y discutir sus resultados en \ref{resultados}.
+Finalmente el capítulo \ref{cap_conclusiones} presenta conclusiones finales de la memoria en \ref{conclusiones}, y lista posible trabajo futuro en \ref{futuro}.
 
 %\lipsum[1-3]
 %\begin{defn}[ver \cite{KAR00}] Definición definitiva $$\frac{d}{dx}\int_a^xf(y)dy=f(x).$$\end{defn}

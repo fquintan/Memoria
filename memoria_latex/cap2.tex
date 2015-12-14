@@ -1,8 +1,8 @@
-\chapter{Conceptos}
+\chapter{Conceptos}\label{conceptos}
 
 En este capítulo se presentan conceptos teóricos necesarios para la comprensión del trabajo realizado en la memoria, así como la descripción de  programas y frameworks utilizados cuyo funcionamiento y restricciones influyeron en decisiones de diseño tomadas a lo largo del desarrollo de la memoria.
 
-\section{Definiciones}
+\section{Definiciones}\label{definiciones}
 \begin{enumerate}
 \item Imagen: Una imagen se puede considerar una matriz de pixeles. El contenido de cada pixel depende del tipo de imagen, en el caso de imágenes en tonos de grises cada pixel corresponde a un valor entero entre 0 y 255, en el caso de imágenes a color cada pixel corresponde a tres números enteros cuyo significado depende del espacio de color que se utilice. En esta memoria las imágenes a color siempre corresponderán al espacio RGB, donde los tres valores del pixel corresponden a su intensidad de rojo, verde y azul respectivamente.
 
@@ -10,25 +10,23 @@ En este capítulo se presentan conceptos teóricos necesarios para la comprensi�
 \end{enumerate}
 
 
-\section{Detección de copia basada en contenido}
+\section{Detección de copia basada en contenido}\label{copias}
 
 La detección de copia basada en contenido o \emph{Content Based Copy Detection} (CBCD) se define como: \\
 Sea $V$ una colección de documentos multimedia (imágenes, audio, video) y sea $q$ un documento de búsqueda. Una \emph{detección de copia basada en contenido} consiste en encontrar y recuperar todos los documentos $v \in V$ de la colección tales que $q$ ``es una copia'' de $v$
-
-\TODO{Usar el ambiente de definiciones}
 
 En el contexto de esta memoria los documentos corresponden a videos, y la relación ``es una copia'' se refiere a que el video de consulta corresponde a una grabación del video original.
 
 Para establecer si dos videos cumplen la relación de copia es necesario tener una manera de comparar su contenido. Es muy probable que la grabación no sea idéntica al video original debido a transformaciones de color y perspectiva inherentes a la grabación, sin embargo es posible comparar los videos por las \textit{características} presentes en ellos, como sus colores, formas, etc. Esta comparación de características se realiza por medio de \emph{descriptores}.
 
-\section{Descriptores}
+\section{Descriptores}\label{descriptores}
 Un \emph{descriptor} de imagen es una forma representar dicha imagen por sus características (como su distribución de colores, orientación de bordes, textura, etc). Los descriptores son usualmente representados como vectores multidimensionales. Para compararlos es común usar una función de distancia, como por ejemplo la distancia euclideana entre vectores.
 
 El descriptor de una imagen puede ser global o local dependiendo de si describe la imagen completa o solo sectores de ella. \\
 Dado que un video es una secuencia de imágenes se puede describir usando una secuencia de descriptores de imágenes, para hacer esto típicamente se submuestrean loas frames del video, es decir, aunque el video muestre 24 frames por segundo, se pueden considerar solo 2 cada segundo para describir el video. Esto funciona debido que en la mayoría de los casos dos frames consecutivos son muy similares entre sí, por lo que tomar todos los frames del video para describirlo aporta información redundante.\\
 Es necesario comparar videos o imágenes utilizando descriptores en vez de comparar sus archivos bit a bit debido a que se pueden realizar transformaciones sobre una imagen que cambien totalmente los bits de su archivo sin modificar mucho el contenido de esta, como por ejemplo iluminar la imagen sumándole un valor fijo al valor de todos sus pixeles.
 
-\section{Android}
+\section{Android}\label{android}
 Android es un sistema operativo desarrollado por Google, es principalmente usado en dispositivos móviles como smartphones y tablets. Las aplicaciones para Android son programas escritos en el lenguaje de programación Java que hacen uso de las bibliotecas del \emph{Software Development Kit} (SDK) de Android para realizar llamadas al sistema operativo. Esta sección presenta brevemente conceptos del sistema Android necesarios para entender la implementación del trabajo realizado.
 
 \subsection*{Actividades y Fragmentos}
@@ -54,7 +52,7 @@ El siguiente código muestra como se puede invocar la aplicación por de la cám
 En la primera línea se selecciona el intent apropiado. Es posible agregarle opciones dependiendo de la acción requerida, en el ejemplo se especifica el archivo de salida y la duración máxima del video. Finalmente se invoca la aplicación usando el método \texttt{startActivityForResult} que revibe al intent y un código que identifica a la aplicación original. Para obtener el resultado de la acción basta implementar el método \texttt{onActivityResult} que será llamado automáticamente por el sistema.  
 
 %%%%%%%%%%%% RENDERSCRIPT %%%%%%%%%%%%%%%%%%%%%%%%%
-\section{RenderScript}
+\section{RenderScript}\label{renderscript}
 Los dispositivos móviles disponen de limitada memoria y capacidad de computo en comparación con un computador de escritorio. Es por esto que para implementar la extracción de descriptores en Android fue necesario buscar alternativas que permitieran hacer uso eficiente de los recursos disponibles, después de investigar se encontró que Android cuenta con un framework propio para aplicaciones que requieran alta capacidad de computo llamada RenderScript \footnote{\url{http://developer.android.com/guide/topics/renderscript/compute.html}}
 
 RenderScript es un framework de Android diseñado para lograr alto rendimiento al correr código en paralelo, aunque algoritmos secuenciales también pueden verse beneficiados por él. El funcionamiento de RenderScript se basa en escribir un \emph{kernel} de procesamiento que el sistema puede distribuir a los procesadores disponibles en el dispositivo, como los múltiples núcleos de la CPU, o la GPU. 
@@ -124,7 +122,7 @@ La clase Allocation cuenta con métodos \texttt{copyFrom} para poblar Allocation
 Se utilizó el framework RenderScript para implementar el cálculo de descriptores en el dispositivo móvil, los detalles de esta implementación se discuten en el capítulo 4 de este informe.
 
 %%%%%%%%%%%% PVCD %%%%%%%%%%%%%%%%%%%%%%%%%
-\section{P-VCD}
+\section{P-VCD}\label{pvcd}
 %Por qué?
 P-VCD es un software de detección de copias en video \cite{p-vcd1}, es decir, detecta segmentos de video similares dentro de una colección. Fue implementado como parte de una tesis de doctorado y fue probado participando en la competencia de Content-based copy detection de TRECVID en 2010 y 2011 \cite{p-vcd2}.
 

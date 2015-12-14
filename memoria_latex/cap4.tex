@@ -1,12 +1,12 @@
-\chapter{Implementación}
+\chapter{Implementación}\label{implementacion}
 En el siguiente capítulo se describe la implementación del sistema desarrollado durante la memoria. Se implementaron dos posibles arquitecturas para un sistema de reconocimiento de videos. La primera alternativa graba videos con el dispositivo móvil y los envía completos al servidor, para que este calcule sus descriptores y realice la búsqueda, llamamos a esta la alternativa \emph{centralizada} pues todos los cálculos son realizados en el servidor. La segunda alternativa del sistema realiza los cálculos de descriptores en el mismo dispositivo móvil que graba el video, luego solo es necesario enviar los descriptores calculados al servidor que ejecuta la búsqueda, llamamos a esta alternativa \emph{distribuida} pues los cálculos están repartidos entre el cliente y el servidor.
 
-En ambas versiones del sistema el cliente corresponde a una aplicación Android implementada en el lenguaje de programación Java, mientras que el servidor fue implementado en Python usando Flask\footnote{\url{http://flask.pocoo.org/}}, un framework minimal para programación de servicios web. Se decidió este ambiente de programación para el servidor dada la familiaridad del alumno memorista con el framework y porque la implementación del servidor no requiere funcionalidad compleja que justifique usar herramientas más completas.
+En ambas versiones del sistema el cliente corresponde a una aplicación Android implementada en el lenguaje de programación Java, mientras que el servidor fue implementado en Python usando Flask\footnote{\url{http://flask.pocoo.org/}}, un framework minimal para programación de servicios web. Se decidió este ambiente de programación para el servidor dada la familiaridad del alumno memorista con el framework y porque la implementación del servidor no requiere funcionalidad compleja que justifique usar herramientas más completas. Todo el código descrito en este capítulo está disponible en Github en un repositorio para el cliente\footnote{\url{https://github.com/fquintan/MovieDetector}} y otro para el servidor\footnote{\url{https://github.com/fquintan/MovieDetectorServidor}}.
 
 El capítulo se divide en una sección para la alternativa centralizada y otra para la distribuida. A su vez cada sección se divide en la implementación del cliente Android y el servidor.
 
 
-\section{Sistema Centralizado}
+\section{Sistema Centralizado}\label{central}
 
 La figura~\ref{arquitectura_centralizada} muestra la arquitectura de la versión centralizada del sistema. En esta versión el dispositivo móvil es usado solo para grabar un video corto. El archivo de video resultante es enviado al servidor (1), el cual calcula sus descriptores (2) y realiza la búsqueda en la base de datos (3), devolviendo los resultados al cliente (4).
 A continuación se detalla la implementación de esta versión del sistema, separando el cliente Android del servidor.
@@ -112,7 +112,7 @@ Primero se verifica que la petición sea de tipo Post y que se haya recibido un 
 Esta versión del sistema destaca por su simplicidad y facilidad de implementar. Además el sistema resultante es flexible, puesto que tiene a su disposición todos los descriptores disponibles en P-VCD y solo se requieren cambios de configuración del servidor para cambiar el descriptor usado por el sistema. Sin embargo esta arquitectura presenta dos grandes problemas, por un lado enviar el video completo al servidor significa un considerable gasto de la red de datos del dispositivo. Por otro lado, el realizar todas las operaciones en el servidor se crea un posible cuello de botella que limita la escalabilidad del sistema. Ambos problemas se originan por el uso ineficiente de los recursos computacionales del sistema. No se está aprovechando la capacidad de computo del dispositivo móvil, en la siguiente sección se propone una arquitectura alternativa que busca solucionar estos problemas.
 
 
-\section{Sistema Distribuido}
+\section{Sistema Distribuido}\label{distr}
 
 La figura~\ref{arquitectura_distribuida} ilustra la arquitectura de esta versión del sistema. El cálculo de descriptores para la búsqueda es realizado por el cliente Android (1) utilizando las herramientas para computación paralela descritas en secciones anteriores. Una vez calculados, se envían solo estos descriptores al servidor (2) el cual los usa para realizar la búsqueda por similitud (3) y luego comunica los resultados de vuelta al cliente (4).
 

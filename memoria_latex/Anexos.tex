@@ -1,3 +1,136 @@
 \begin{Anexos}
 \section*{Código}
+\lstset{style=CInputStyle}
+\subsection*{\texttt{GrayZoneHist.rs}}
+\begin{lstlisting}
+
+void setup_histogram(int32_t n_xzones, int32_t n_yzones,
+    int32_t imgWidth, int32_t imgHeigth, int32_t n_bins){
+    xzones = n_xzones;
+    bins = n_bins;
+    binMultiplier = 256 / bins;
+    zoneWidth = imgWidth / n_xzones;
+    zoneHeigth = imgHeigth / n_yzones;
+}
+void root(const uchar *v_in, uint32_t x,  uint32_t y) {
+    int32_t bin = *v_in / binMultiplier;
+    if (bin < 5){
+        int32_t xzone = x / zoneWidth;
+        int32_t yzone = y / zoneHeigth;
+        int32_t index = (yzone * bins * xzones) + (xzone * bins) + bin;
+        volatile int32_t* addr = gOutarray + index;
+        rsAtomicInc(addr);
+    }
+}
+\end{lstlisting}
+
+\subsection*{\texttt{keyframe.rs}}
+\begin{lstlisting}
+void setup_keyframe(int32_t n_width, int32_t n_height,
+    int32_t imgWidth, int32_t imgHeight){
+    height = n_height;
+    width = n_width;
+    zoneWidth = imgWidth / n_width;
+    zoneHeight = imgHeight / n_height;
+}
+void root(const uchar4 *v_in, uint32_t x,  uint32_t y) {
+    int32_t red = (*v_in).r;
+    int32_t green = (*v_in).g;
+    int32_t blue = (*v_in).b;
+    int32_t xzone = x / zoneWidth;
+    int32_t yzone = y / zoneHeight;
+    int32_t index = ((yzone * width) + xzone)*3;
+
+    volatile int32_t* addr_r = gOutarray + index;
+    volatile int32_t* addr_g = gOutarray + index + 1;
+    volatile int32_t* addr_b = gOutarray + index + 2;
+    rsAtomicAdd(addr_r, red);
+    rsAtomicAdd(addr_g, green);
+    rsAtomicAdd(addr_b, blue);
+}
+\end{lstlisting}
+
+
+\subsection*{\texttt{reducer.rs}}
+\begin{lstlisting}
+void setup_reducer(int32_t n_width, int32_t n_height,
+    int32_t imgWidth, int32_t imgHeight){
+    height = n_height;
+    width = n_width;
+    zoneWidth = imgWidth / n_width;
+    zoneHeight = imgHeight / n_height;
+}
+void root(const uchar *v_in, uint32_t x,  uint32_t y) {
+    int32_t value = *v_in;
+    int32_t xzone = x / zoneWidth;
+    int32_t yzone = y / zoneHeight;
+    int32_t index = (yzone * width) + xzone;
+    int index_value = index;
+    volatile int32_t* addr = gOutarray + index;
+    rsAtomicAdd(addr, value);
+}
+\end{lstlisting}
+
+\subsection*{\texttt{borderDetector}}
+\begin{lstlisting}
+void setup_detector(float t){threshold = t;}
+void root(uchar *v_out, uint32_t x,  uint32_t y) {
+    uint32_t x_index = 2 * x;
+    uint32_t y_index = 2 * y;
+
+    int A_0_0 = rsGetElementAt_int(gIn, x_index, y_index);
+    int A_0_1 = rsGetElementAt_int(gIn, x_index+1, y_index);
+    int A_1_0 = rsGetElementAt_int(gIn, x_index, y_index+1);
+    int A_1_1 = rsGetElementAt_int(gIn, x_index+1, y_index+1);
+
+    float max = threshold;
+    uchar max_index = 5;
+    float current = fabs(A_0_0*K1_0_0 + A_0_1*K1_0_1 +
+        A_1_0*K1_1_0 + A_1_1*K1_1_1);
+    if (current > max){
+            max = current;
+            max_index = 0;}
+    current = fabs(A_0_0*K2_0_0 + A_0_1*K2_0_1 +
+        A_1_0*K2_1_0 + A_1_1*K2_1_1);
+    if (current > max){
+        max = current;
+        max_index = 1;}
+    current = fabs(A_0_0*K3_0_0 + A_0_1*K3_0_1 +
+        A_1_0*K3_1_0 + A_1_1*K3_1_1);
+    if (current > max){
+            max = current;
+            max_index = 2;}
+    current = fabs(A_0_0*K4_0_0 + A_0_1*K4_0_1 +
+        A_1_0*K4_1_0 + A_1_1*K4_1_1);
+    if (current > max){
+            max = current;
+            max_index = 3;}
+    current = fabs(A_0_0*K5_0_0 + A_0_1*K5_0_1 +
+        A_1_0*K5_1_0 + A_1_1*K5_1_1);
+    if (current > max){
+            max = current;
+            max_index = 4;}
+    *v_out = max_index;
+}
+\end{lstlisting}
+
+\subsection*{edgeHist.rs}
+\begin{lstlisting}
+void setup_edge_histogram(int32_t n_xzones, int32_t n_yzones,
+    int32_t imgWidth, int32_t imgHeigth){
+    xzones = n_xzones;
+    yzones = n_yzones;
+    zoneWidth = imgWidth / n_xzones;
+    zoneHeigth = imgHeigth / n_yzones;
+}
+void root(const uchar *v_in, uint32_t x,  uint32_t y) {
+    int32_t bin = *v_in;
+    int32_t xzone = x / zoneWidth;
+    int32_t yzone = y / zoneHeigth;
+    int32_t index = (yzone*bins + xzone)*bins + bin;
+    volatile int32_t* addr = gOutarray + index;
+    rsAtomicInc(addr);
+}
+\end{lstlisting}
+
 \end{Anexos}

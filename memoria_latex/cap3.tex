@@ -1,7 +1,7 @@
-\chapter{Descriptores}
+\chapter{Descriptores}\label{cap_descriptores}
  En este capítulo se detalla el funcionamiento de los descriptores que fueron implementados y probados en la memoria.
 
-\section{Descriptor de Histograma de grises por zona (GHD)}
+\section{Descriptor de Histograma de grises por zona (GHD)}\label{ghd}
 Este descriptor busca capturar la distribución espacial de la luz en la imagen usando histogramas de grises. Un histograma de grises, o histograma de intensidad, representa la cantidad de pixeles con cierto rango de intensidad, suponiendo que un pixel tiene intensidad entre 0 y 255 y que el histograma tiene $m$ bins entonces el valor del bin $i$ del histograma representa la cantidad de pixeles en la imagen con intensidad en el intervalo $[\frac{255*i}{m},\frac{255*(i+1)}{m})$.
 
 Para calcular el GHD de una imagen primero se pasa la imagen a escala de grises, luego se divide en $W \times H$ zonas, para cada zona se calcula un histograma de $m$ bins con la intensidad de sus pixeles, para formar el descriptor global de la imagen se concatenan los histogramas de cada zona. La figura~\ref{descriptor_ghd} ilustra el proceso del cálculo del descriptor.El descriptor final es un vector de $W \times H \times m$ dimensiones.
@@ -12,7 +12,7 @@ Para calcular el GHD de una imagen primero se pasa la imagen a escala de grises,
 		\label{descriptor_ghd}
 	\end{figure}
 
-\section{Reduced Keyframe (KF)}
+\section{Reduced Keyframe (KF)}\label{kfd}
 Este descriptor busca representar la distribución de color en la imagen. Para lograr esto se divide en $W \times H$ zonas, para cada zona se calcula el color promedio de sus pixeles, calculando por separado el promedio en cada canal de la imagen RGB, así para cada zona se obtiene tres valores correspondientes a los valores promedio de rojo, verde y azul en la zona. La figura~\ref{descriptor_kf} ilustra el resultado de el proceso anterior.  Se concatenan los resultados de cada zona para formar el descriptor global. El descriptor es un vector de $W \times H \times 3$ dimensiones.
     \begin{figure}[!h]
 		\centering
@@ -21,7 +21,7 @@ Este descriptor busca representar la distribución de color en la imagen. Para l
 		\label{descriptor_kf}
 	\end{figure}
 
-\section{Histograma de bordes por zona (EHD)}
+\section{Histograma de bordes por zona (EHD)}\label{ehd}
 Este descriptor busca representar la orientación de los bordes presentes en la imagen \cite{Manjunath:ehd}. Se construye pasando la imagen a escala de grises y particionándola en $W \times H$ zonas, cada zona se subdivide en $M_w \times M_h$ bloques y cada bloque se subdivide en cuatro sub-bloques como muestra la Figura~\ref{ehd_blocks}. 
     \begin{figure}[!h]
 		\centering
