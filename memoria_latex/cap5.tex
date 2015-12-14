@@ -47,8 +47,6 @@ La figura~\ref{resultados_tiempos_total} muestra la medición del tiempo total d
 		\label{resultados_tiempos_total}
 	\end{figure}
 
-Esta reducción del tiempo de respuesta era de esperarse puesto que la implementación distribuida extrae descriptores mientras el video se graba, presentando un sobrecosto nulo. Para observar de manera más detallada las razones de la disminución del tiempo de respuesta se midió el tiempo requerido por operación. La figuras \ref{resultados_tiempo_detalle_centralizado} y \ref{resultados_tiempo_detalle_centralizado} muestran el detalle del tiempo de cada sistema. Podemos apreciar que en el caso centralizado cerca de un tercio del tiempo total del servidor es usado calculando los descriptores del video de búsqueda. En la versión distribuida este cálculo es reemplazado por simplemente escribir los descriptores recibidos a un archivo, lo cual toma una cantidad despreciable de tiempo en comparación con las otras operaciones. Por otro lado podemos apreciar la disminución del tiempo de transmisión debido a la reducción de la cantidad de datos que hay que enviar al servidor. 
-
 	\begin{figure}[!h]
 		\centering
 		\includegraphics[width=\textwidth]{imagenes/cap5/resultados_tiempo_detalle_centralizado.png}
@@ -62,17 +60,18 @@ Esta reducción del tiempo de respuesta era de esperarse puesto que la implement
 		\caption{Gráfico con detalle de tiempo por operación del sistema centralizado}
 		\label{resultados_tiempo_detalle_distribuido}
 	\end{figure}
+	
+Esta reducción del tiempo de respuesta era de esperarse puesto que la implementación distribuida extrae descriptores mientras el video se graba, presentando un sobrecosto nulo. Para observar de manera más detallada las razones de la disminución del tiempo de respuesta se midió el tiempo requerido por operación. La figuras \ref{resultados_tiempo_detalle_centralizado} y \ref{resultados_tiempo_detalle_distribuido} muestran el detalle del tiempo de cada sistema. Podemos apreciar que en el caso centralizado cerca de un tercio del tiempo total del servidor es usado calculando los descriptores del video de búsqueda. En la versión distribuida este cálculo es reemplazado por simplemente escribir los descriptores recibidos a un archivo, lo cual toma una cantidad despreciable de tiempo en comparación con las otras operaciones. Por otro lado podemos apreciar la disminución del tiempo de transmisión debido a la reducción de la cantidad de datos que hay que enviar al servidor. 
 
 Finalmente analizamos la cantidad de datos enviados al servidor por cada versión del sistema. La tabla~\ref{resultados_datos_enviados} muestra la comparación de los datos enviados por cada versión. Para la versión distribuida se detalla la diferencia entre cada descriptor. Para la versión centralizada no es necesario el detalle pues no hay diferencia en el video enviado al usar distintos descriptores. Podemos apreciar que se redujo significativamente la cantidad de datos enviados al servidor. La alternativa centralizada envía más de 6 megabytes por cada consulta, mientras que el sistema distribuido reduce esta cantidad al orden de 20 kilobytes dependiendo del tipo de descriptor utilizado. En términos prácticos esta reducción hace posible el usar la aplicación con la red de datos móviles sin incurrir en un gasto excesivo del usuario.
 
-\begin{table}[]
+\begin{table}[h]
 \centering
-\label{resultados_datos_enviados}
 \begin{tabular}{|c|c|c|c|l|}
 \hline
                                                              & Centralizado & Distribuido - GHD & Distribuido - EHD & Distribuido - KFD          \\ \hline
 \begin{tabular}[c]{@{}c@{}}KiloBytes\\ Enviados\end{tabular} & 6389.64      & 22.69             & 11.98             & \multicolumn{1}{c|}{19.60} \\ \hline
 \end{tabular}
 \caption{Cantidad de datos enviados al servidor por cada versión de la aplicación}
-
+\label{resultados_datos_enviados}
 \end{table}

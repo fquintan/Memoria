@@ -21,22 +21,33 @@ En esta versión el cliente Android es responsable de grabar un video usando la 
 
 \subsubsection*{Grabación}
 
-El módulo de grabación es responsable de grabar un video usando la cámara del dispositivo y guardar el archivo resultante. Para lograr esto se creó el fragmento \texttt{VideoRecordFragment}, esta clase presenta al usuario un breve mensaje de instrucciones y un botón para comenzar la grabación. La figura ~\ref{pantalla_video_record_fragment} corresponde a la pantalla que ve el usuario al iniciar la aplicación. Al hacer click en el botón \emph{grabar} el sistema invoca a la aplicación por defecto de grabación de videos de Android por medio de un Intent.
-La aplicación de grabación presenta un preview de la cámara como muestra la figura~\ref{pantalla_video_record_android}, en este momento el usuario debe iniciar la grabación, que dura por un máximo de 5 segundos y guarda en un archivo el video resultante. Después de terminar la grabación el sistema le cede de vuelta el control a la aplicación llamando al método \texttt{onActivityResult}, con esto se procede a enviar el video resultante al servidor.
-\TODO{insertar aquí pantallazos de la aplicación}
+El módulo de grabación es responsable de grabar un video usando la cámara del dispositivo y guardar el archivo resultante. Para lograr esto se creó el fragmento \texttt{VideoRecordFragment}, esta clase presenta al usuario un breve mensaje de instrucciones y un botón para comenzar la grabación. La figura ~\ref{pantalla_inicial_centralizada} corresponde a la pantalla que ve el usuario al iniciar la aplicación. Al hacer click en el botón \emph{grabar} el sistema invoca a la aplicación por defecto de grabación de videos de Android por medio de un Intent.
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=0.3]{imagenes/cap4/pantalla_inicial_centralizada}
+		\caption{Vista del cliente el inicio de la versión centralizada.}
+		\label{pantalla_inicial_centralizada}
+	\end{figure}
+La aplicación de grabación presenta un preview de la cámara, el usuario inicia la grabación presionando un botón, la aplicación graba por un máximo de 5 segundos y guarda en un archivo el video resultante. Después de terminar la grabación el sistema le cede de vuelta el control a la aplicación llamando al método \texttt{onActivityResult}, con esto se procede a enviar el video resultante al servidor.
+
 
 \subsubsection*{Conexión con el servidor}
 El módulo de conexión con el servidor es responsable de enviar al servidor el video capturado por el módulo anterior. Se implementó la clase \texttt{FromVideoSearchRequest} que recibe un archivo y ejecuta un petición HTTP Post al servidor usando la clase \texttt{HttpUrlConnection} de Java. Con la petición Post se envía el archivo grabado y un parámetro con el tipo de descriptor para usar en la búsqueda. Al crear un objeto de la clase \texttt{FromVideoSearchRequest} se le debe entregar un \texttt{ResponseHandler}, que corresponde a una interfaz con los métodos \texttt{onSuccessResponse} y \texttt{onFailure}, alguno de estos métodos se llamará dependiendo de la respuesta del servidor.
-Una vez se termina el envío de datos al servidor se cambia la interfaz por una pantalla inicialmente vacía donde se mostraran los resultados como muestra la figura~\ref{pantalla_empty_results}.
+Una vez se termina el envío de datos al servidor se cambia la interfaz por una pantalla inicialmente vacía donde se mostraran los resultados.
 
 \subsubsection*{Interfaz de resultados}
-Para mostrarle los resultados de la búsqueda al usuario se implementó el fragmento \texttt{QueryResultsFragment} que implementa la interfaz \texttt{ResponseHandler} definida en la parte anterior. Inicialmente el fragmento muestra un texto indicando que se están esperando los resultados de la búsqueda, cuando se obtiene respuesta del servidor se ejecuta alguno de los métodos de la interfaz. Si el servidor responde con un error se ejecuta el método \texttt{onFailure} que muestra un mensaje al usuario informándolo del error. De lo contrario se ejecuta el método \texttt{onSuccessResponse} que recibe un String con los resultados del servidor codificados como JSON. Los resultados son deserializados usando la biblioteca GSON\footnote{GSON, biblioteca para convertir objetos Java a sus representación en JSON y vice-versa: \url{https://github.com/google/gson}} de manera que cada candidato de video identificado se convierte en un objeto de la clase \texttt{Detection} y se ingresa en una lista. El fragmento contiene un \texttt{ListView}, un elemento de interfaz de Android para mostrar listas de objetos. Se programó la clase \texttt{QueryResultAdapter} que recibe la lista de detecciones y crea una vista con cada una como muestra la figura~\ref{pantalla_list_results}.
-
+Para mostrarle los resultados de la búsqueda al usuario se implementó el fragmento \texttt{QueryResultsFragment} que implementa la interfaz \texttt{ResponseHandler} definida en la parte anterior. Inicialmente el fragmento muestra un texto indicando que se están esperando los resultados de la búsqueda, cuando se obtiene respuesta del servidor se ejecuta alguno de los métodos de la interfaz. Si el servidor responde con un error se ejecuta el método \texttt{onFailure} que muestra un mensaje al usuario informándolo del error. De lo contrario se ejecuta el método \texttt{onSuccessResponse} que recibe un String con los resultados del servidor codificados como JSON. Los resultados son deserializados usando la biblioteca GSON\footnote{GSON, biblioteca para convertir objetos Java a sus representación en JSON y vice-versa: \url{https://github.com/google/gson}} de manera que cada candidato de video identificado se convierte en un objeto de la clase \texttt{Detection} y se ingresa en una lista. El fragmento contiene un \texttt{ListView}, un elemento de interfaz de Android para mostrar listas de objetos. Se programó la clase \texttt{QueryResultAdapter} que recibe la lista de detecciones y crea una vista con cada una como muestra la figura~\ref{pantalla_resultados}.
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=0.3]{imagenes/cap4/pantalla_resultados.png}
+		\caption{Vista del cliente mostrando los resultados de la búsqueda.}
+		\label{pantalla_resultados}
+	\end{figure}
 El diagrama de la figura~\ref{diagrama_clases_centralizado} muestra las clases descritas en la sección anterior, detallando sus contenidos e interacciones.
 	\begin{figure}[!h]
 		\centering
 		\includegraphics[scale=1.6]{imagenes/cap4/diagrama_cliente_centralizado.png}
-		\caption{Diagrama de clases del cliente Android cetnralizado.}
+		\caption{Diagrama de clases del cliente Android centralizado.}
 		\label{diagrama_clases_centralizado}
 	\end{figure}
 
@@ -119,14 +130,25 @@ A diferencia de la versión anterior del sistema, en esta versión el cliente de
 
 \subsubsection*{Grabación}
 En esta versión ya no es necesario obtener un archivo de video resultante, sino que es necesario realizar un procesamiento del video. Dada esta diferencia se decidió reimplementar este módulo, creando un nuevo fragmento \texttt{CameraPreviewFragment} de manera que se puedan obtener frames de la cámara mientras se graba el video para poder realizar el cálculo en tiempo real.
-
-La interfaz gráfica del fragmento \texttt{CameraPreviewFragment} consta de tres elementos que podemos identificar en la figura~\ref{pantalla_camera_preview}, el preview de la cámara, los cuatro puntos con los que el usuario puede marcar los límites de la pantalla y finalmente un botón para comenzar la grabación. A continuación se detallan aspectos de la implementación de cada uno de estos elementos.
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=0.3]{imagenes/cap4/pantalla_inicial_distribuida.png}
+		\caption{Vista inicial del cliente en la versión distribuida.}
+		\label{pantalla_inicial_distribuida}
+	\end{figure}
+La interfaz gráfica del fragmento \texttt{CameraPreviewFragment} consta de tres elementos que podemos identificar en la figura~\ref{pantalla_inicial_distribuida}, el preview de la cámara, los cuatro puntos con los que el usuario puede marcar los límites de la pantalla y finalmente un botón para comenzar la grabación. A continuación se detallan aspectos de la implementación de cada uno de estos elementos.
 
 A diferencia de la versión anterior, en que la cámara era manejada por una aplicación predefinida, ahora es necesario manejar los eventos del ciclo de vida de la cámara. Para esto se utilizó la funcionalidad de la clase \texttt{Camera}\footnote{\url{http://developer.android.com/guide/topics/media/camera.html}} de Android. Esta clase permite mostrar un preview y obtener frames para procesarlos en tiempo real. Se programó la clase \texttt{CameraContainer}, que representa un elemento gráfico que contiene el preview. La clase además encapsula las llamadas al sistema operativo necesarias para controlar la cámara, a través de las funciones \texttt{startCameraPreview}, \texttt{stopCameraPreview} y \texttt{releaseCamera}.
 
 Se programó la clase \texttt{CropView} que controla los cuatro puntos vistos en la interfaz. Estos puntos permiten al usuario ajustar el video al tamaño de su pantalla, esto permite un mejor desempeño de los descriptores utilizados dado que todo lo grabado corresponde al video de consulta y no a objetos exteriores como el marco de la pantalla. La clase contiene cuatro puntos representados por objetos de la clase \texttt{Point} e implementa el método \texttt{onTouchEvent}, que permite ser notificado por el sistema operativo cuando el usuario toca la pantalla. Cuando esto sucede se verifica si el usuario está arrastrando alguno de los puntos y se ajusta la interfaz gráfica para reflejar el cambio. Al procesar la imagen para calcular sus descriptores se especifica la posición de los cuatro puntos de manera que el cálculo solo considere la sección de la imagen que está dentro de sus límites.
 
-Por último el bóton para iniciar la grabación corresponde a un objeto de la clase \texttt{Button} de Android, al presionar el botón se utiliza el método \texttt{setPreviewCallback} del cameraContainer para registrar un \emph{listener} que será llamado por el sistema cada vez que la cámara obtiene un nuevo frame de video, esto será usado por el siguiente módulo para realizar el cálculo de descriptores. La interfaz gráfica cambia para reflejar que se están calculando descriptores, el botón de iniciar se reemplaza por una barra de progreso que muestra cuanto tiempo de grabación queda como muestra la figura~\ref{pantalla_calculando_descriptores}.
+Por último el bóton para iniciar la grabación corresponde a un objeto de la clase \texttt{Button} de Android, al presionar el botón se utiliza el método \texttt{setPreviewCallback} del cameraContainer para registrar un \emph{listener} que será llamado por el sistema cada vez que la cámara obtiene un nuevo frame de video, esto será usado por el siguiente módulo para realizar el cálculo de descriptores. La interfaz gráfica cambia para reflejar que se están calculando descriptores, el botón de iniciar se reemplaza por una barra de progreso que muestra cuanto tiempo de grabación queda como muestra la figura~\ref{pantalla_calculando_distribuida}.
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=0.3]{imagenes/cap4/pantalla_calculando_distribuida.png}
+		\caption{Vista inicial del cliente en la versión distribuida.}
+		\label{pantalla_calculando_distribuida}
+	\end{figure}
 
 La figura~\ref{diagrama_modulo_captura} muestra un diagrama que detalla las clases utilizadas descritas anteriormente.
 

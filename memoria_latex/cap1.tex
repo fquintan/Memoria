@@ -1,6 +1,39 @@
 \chapter{Introducción}
+
 \section{Motivación}
+
+Día a día crece la cantidad de contenido audiovisual disponible gracias en parte a la televisión y por otro lado a la proliferación de medios de captura de video de bajo costo y a la creciente oferta de servicios de almacenamiento de video en internet como Youtube o Vimeo.
+Sin embargo, gran parte de este contenido no está etiquetado, es decir, no presenta metadatos que faciliten su rápida identificación. 
+
+
+
+La presente memoria se enmarca dentro del siguiente problema: identificar la \emph{fuente} de un segmento de video a partir de su contenido utilizando una detección de copias. El objetivo planteado es que un usuario pueda grabar parte del video no etiquetado usando su celular y, a través de una detección de copias, identificar el video. 
+Adicionalmente se desea probar diversas implementaciones del sistema para medir sus diferencias en términos de eficiencia (uso de recursos como la red de datos y el tiempo de procesamiento) y eficacia (habilidad para retornar resultados correctos).
+
 \section{Objetivos}
+
+El objetivo general de esta memoria es implementar un sistema de búsqueda de videos en donde un usuario graba un video corto con un dispositivo móvil, luego se comunica con un servidor de consultas que identifique la fuente del video y le comunique sus resultados de vuelta a la aplicación. Se propone implementar el cálculo de descriptores de video para la búsqueda en el dispositivo móvil y comparar su eficiencia y uso de recursos con la alternativa de enviar el video completo para ser procesado por el servidor. Se desea además implementar distintos tipos de descriptores y evaluar su eficacia para reconocer el video de búsqueda.
+
+Para conseguir el objetivo principal de la memoria se pueden detallar varios objetivos específicos expuestos a continuación y agrupados en tres partes: 
+\subsubsection*{Aplicación Android}
+\begin{itemize}
+\item Implementar una aplicación Android capaz de capturar frames usando la cámara del dispositivo.
+\item Implementar un módulo que reciba frames de la cámara y calcule descriptores de imágenes, el módulo debe ser capaz de calcular descriptores de Histograma de grises, Histograma de bordes y Reduced keyframe.
+\item Obtener resultados de la búsqueda ejecutada por el servidor y mostrárselos al usuario.
+\end{itemize}
+\subsubsection*{Servidor}
+\begin{itemize}
+\item Descargar películas de dominio público e indexarlas para crear una base de datos de videos sobre la cual se realizarán consultas.
+\item Implementar un servidor que reciba descriptores de la aplicación móvil y ejecute una búsqueda de copias en base a ellos.
+\item Comunicarle los resultados de la búsqueda de vuelta a la aplicación.
+\end{itemize}
+\subsubsection*{Experimentos}
+\begin{itemize}
+\item Comparar los descriptores implementados en términos de su eficacia para la búsqueda.
+\item Implementar una versión alternativa del sistema que reciba videos completos de la aplicación móvil y realice tanto el cálculo de descriptores como la búsqueda en el servidor.
+\item Comparar las dos versiones del sistema en términos de sus eficiencia para cuantificar las ganancias comparativas logradas al realizar el cálculo de descriptores en el dispositivo móvil. 
+\end{itemize}
+
 \section{Estructura de la memoria}
 
 %\lipsum[1-3]
