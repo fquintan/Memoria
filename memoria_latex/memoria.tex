@@ -48,14 +48,22 @@
   backgroundcolor=\color{mygray2}
 }
 
-
+\newcommand*\justify{%
+  \fontdimen2\font=0.4em% interword space
+  \fontdimen3\font=0.2em% interword stretch
+  \fontdimen4\font=0.1em% interword shrink
+  \fontdimen7\font=0.1em% extra space
+  \hyphenchar\font=`\-% allowing hyphenation
+}
 \begin{document}
 
 \frontmatter
 \maketitle
 
 \begin{abstract}
-{\lipsum[1-4]}
+Hoy en día existe gran cantidad de contenido audiovisual sin etiquetar, lo cual dificulta su búsqueda y reconocimiento. Para buscar videos en colecciones no etiquetadas se usa la búsqueda por similitud, que se basa en comparar videos usando descriptores -vectores que contienen información del contenido del video- para establecer relaciones de semejanza entre videos que permiten encontrar videos similares.
+
+Existen soluciones disponibles capaces de realizar la búsqueda por similitud para archivos de video en un mismo computador. En esta memoria se propone e implementa un sistema de búsqueda de videos que utiliza dispositivos móviles Android para grabar un video, y realiza la búsqueda por similitud haciendo uso de las herramientas existentes. Además se ponen a prueba distintas implementaciones del sistema para compararlas en términos de su eficiencia y eficacia.  
 \end{abstract}
 
 \begin{dedicatoria} % opcional

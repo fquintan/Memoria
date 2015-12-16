@@ -13,7 +13,7 @@ En este capítulo se presentan conceptos teóricos necesarios para la comprensi�
 \section{Detección de copia basada en contenido}\label{copias}
 
 La detección de copia basada en contenido o \emph{Content Based Copy Detection} (CBCD) se define como: \\
-Sea $V$ una colección de documentos multimedia (imágenes, audio, video) y sea $q$ un documento de búsqueda. Una \emph{detección de copia basada en contenido} consiste en encontrar y recuperar todos los documentos $v \in V$ de la colección tales que $q$ ``es una copia'' de $v$
+Sea $V$ una colección de documentos multimedia (imágenes, audio, video) y sea $q$ un documento de búsqueda. Una \emph{detección de copia basada en contenido} consiste en encontrar y recuperar todos los documentos $v \in V$ de la colección tales que $q$ ``es una copia'' de $v$.
 
 En el contexto de esta memoria los documentos corresponden a videos, y la relación ``es una copia'' se refiere a que el video de consulta corresponde a una grabación del video original.
 
@@ -23,7 +23,7 @@ Para establecer si dos videos cumplen la relación de copia es necesario tener u
 Un \emph{descriptor} de imagen es una forma representar dicha imagen por sus características (como su distribución de colores, orientación de bordes, textura, etc). Los descriptores son usualmente representados como vectores multidimensionales. Para compararlos es común usar una función de distancia, como por ejemplo la distancia euclideana entre vectores.
 
 El descriptor de una imagen puede ser global o local dependiendo de si describe la imagen completa o solo sectores de ella. \\
-Dado que un video es una secuencia de imágenes se puede describir usando una secuencia de descriptores de imágenes, para hacer esto típicamente se submuestrean loas frames del video, es decir, aunque el video muestre 24 frames por segundo, se pueden considerar solo 2 cada segundo para describir el video. Esto funciona debido que en la mayoría de los casos dos frames consecutivos son muy similares entre sí, por lo que tomar todos los frames del video para describirlo aporta información redundante.\\
+Dado que un video es una secuencia de imágenes se puede describir usando una secuencia de descriptores de imágenes, para hacer esto típicamente se submuestrean los frames del video, es decir, aunque el video muestre 24 frames por segundo, se pueden considerar solo 2 cada segundo para describir el video. Esto funciona debido que en la mayoría de los casos dos frames consecutivos son muy similares entre sí, por lo que tomar todos los frames del video para describirlo aporta información redundante.\\
 Es necesario comparar videos o imágenes utilizando descriptores en vez de comparar sus archivos bit a bit debido a que se pueden realizar transformaciones sobre una imagen que cambien totalmente los bits de su archivo sin modificar mucho el contenido de esta, como por ejemplo iluminar la imagen sumándole un valor fijo al valor de todos sus pixeles.
 
 \section{Android}\label{android}
@@ -47,7 +47,7 @@ El siguiente código muestra como se puede invocar la aplicación por de la cám
 
     startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
 \end{lstlisting}
-\TODO{Codigo lindo}
+%\TODO{Codigo lindo}
 
 En la primera línea se selecciona el intent apropiado. Es posible agregarle opciones dependiendo de la acción requerida, en el ejemplo se especifica el archivo de salida y la duración máxima del video. Finalmente se invoca la aplicación usando el método \texttt{startActivityForResult} que revibe al intent y un código que identifica a la aplicación original. Para obtener el resultado de la acción basta implementar el método \texttt{onActivityResult} que será llamado automáticamente por el sistema.  
 
@@ -73,7 +73,7 @@ void  rgba_to_grayscale(uchar4 *v_in, uchar *v_out,
 }
 \end{lstlisting}
 
-Las primeras tres líneas corresponden a configuración de Renderscript. La función \texttt{rgb\_to\_grayscale} recibe 4 parámetros. El primero es un puntero a un \texttt{uchar4}, un tipo nativo de RenderScript que representa un pixel con cuatro elementos, este corresponde a un pixel de la imagen de entrada. El segundo es un puntero a un \texttt{uchar} que corresponde a un pixel de la imágen de salida. El tercer y cuarto parámetro corresponden a las coordenadas que ocupan los pixeles de entrada y salida en sus respectivas imágenes. El cuerpo de la función extrae los valores de rojo, verde y azul del pixel de entrada, calcula el valor de gris correspondiente y lo asigna al pixel de salida.
+Las primeras tres líneas corresponden a configuración de Renderscript. La función \texttt{\justify rgb\_to-\_grayscale} recibe 4 parámetros. El primero es un puntero a un \texttt{uchar4}, un tipo nativo de RenderScript que representa un pixel con cuatro elementos, este corresponde a un pixel de la imagen de entrada. El segundo es un puntero a un \texttt{uchar} que corresponde a un pixel de la imágen de salida. El tercer y cuarto parámetro corresponden a las coordenadas que ocupan los pixeles de entrada y salida en sus respectivas imágenes. El cuerpo de la función extrae los valores de rojo, verde y azul del pixel de entrada, calcula el valor de gris correspondiente y lo asigna al pixel de salida.
 
 El código anterior se ejecutará una vez para cada pixel de la imagen de entrada, creando así la imagen de salida. El sistema operativo distribuirá esta ejecución de la mejor manera posible haciendo uso de los múltiples núcleos de la CPU o GPU para poder realizar el cálculo de varios pixeles en paralelo.
 
@@ -170,7 +170,7 @@ Este ejemplo crea un nuevo perfil de consulta, que usará la base de datos ubica
 \begin{lstlisting}[style=BashInputStyle]
     > pvcd_search -ss -profile perfil -knn 3
 \end{lstlisting}
-Este comando ejecuta la búsqueda, encontrando para cxada descriptor de la base de datos de consulta, sus tres vecinos más cercanos. Los resultados se guardan por defecto en el archivo de texto \texttt{ss,segments-knn\_3.txt} del directorio \texttt{perfil}. El paso final es encontrar secuencias entre los vecinos más cercanos usando el comando:
+Este comando ejecuta la búsqueda, encontrando para cada descriptor de la base de datos de consulta, sus tres vecinos más cercanos. Los resultados se guardan por defecto en el archivo de texto \texttt{ss,segments-knn\_3.txt} del directorio \texttt{perfil}. El paso final es encontrar secuencias entre los vecinos más cercanos usando el comando:
 \begin{lstlisting}[style=BashInputStyle]
     > pvcd_detect -detect -ss "perfil\ss,segments-knn\_3.txt"
         -minLength 1s -out "perfil\detections.txt"
