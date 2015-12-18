@@ -31,6 +31,8 @@
   language=C,
   basicstyle=\small\sffamily,
   numbers=left,
+  otherkeywords={\#pragma},
+  keywordstyle=\color{pblue},
   numberstyle=\tiny,
   numbersep=3pt,
   frame=tb,
@@ -88,6 +90,20 @@
   identifierstyle=\color{red}
 }
 
+% Python style for highlighting
+\lstdefinestyle{PythonInputStyle}{
+language=Python,
+numbers=left,
+  backgroundcolor=\color{mygray},
+basicstyle=\small\sffamily,
+otherkeywords={self},             % Add keywords here
+keywordstyle=\color{pblue},
+emph={MyClass,__init__},          % Custom highlighting
+emphstyle=\color{pred},    % Custom highlighting style
+stringstyle=\color{pgreen},
+frame=tb,                         % Any extra options here
+showstringspaces=false            % 
+}
 
 \newcommand*\justify{%
   \fontdimen2\font=0.4em% interword space

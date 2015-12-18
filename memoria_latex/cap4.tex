@@ -56,7 +56,7 @@ El diagrama de la figura~\ref{diagrama_clases_centralizado} muestra las clases d
 El servidor debe recibir una petición Post que contenga un video y el tipo de descriptor que se desea usar en la búsqueda. Debe usar el programa P-VCD para calcular los descriptores especificados y realizar la búsqueda para identificar el video original, finalmente debe entregarle al cliente en formato JSON una lista de los candidatos que encuentre.
 
 Para recibir peticiones Post se usó el framework Flask, que permite programar servicios web con muy poco código extra. El siguiente ejemplo muestra todo el código necesario para definir y responder una petición Post:
-\begin{lstlisting}[language=python]
+\begin{lstlisting}[style=PythonInputStyle]
 from flask import Flask
 app = Flask(__name__)
 
@@ -89,7 +89,7 @@ Esta función no recibe argumentos llama a \texttt{pvcd\_detect} que usa la info
 
 \end{itemize}
 Usando estas funciones el código de la función \texttt{search\_by\_video\_file} queda como sigue:
-\begin{lstlisting}[language=python]
+\begin{lstlisting}[style=PythonInputStyle]
 @app.route("/search/api/search_by_video_file", methods=['POST'])
 def search_by_video_file():
   if request.method == 'POST':

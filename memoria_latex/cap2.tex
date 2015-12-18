@@ -19,6 +19,9 @@ En el contexto de esta memoria los documentos corresponden a videos, y la relaci
 
 Para establecer si dos videos cumplen la relación de copia es necesario tener una manera de comparar su contenido. Es muy probable que la grabación no sea idéntica al video original debido a transformaciones de color y perspectiva inherentes a la grabación, sin embargo es posible comparar los videos por las \textit{características} presentes en ellos, como sus colores, formas, etc. Esta comparación de características se realiza por medio de \emph{descriptores}.
 
+La Figura~\ref{deteccion_copia} ilustra las etapas del proceso de detección de copia. El primer es extraer descriptores del video de consulta y de cada uno de los videos de la colección de referencia (estos últimos pueden ser precalculados y utilizados en múltiples consultas). Luego se realiza una \emph{búsqueda por similitud}, que corresponde identificar por cada descriptor del video de consulta, los descriptores más \emph{similares} entre los descriptores de la colección de referencia. En este contexto los descriptores \emph{más similares} corresponden a los que presenten menor distancia en el espacio vectorial. Finalmente se toma la información de descriptores más similares y se buscan secuencias secuencias crecientes de descriptores que correspondan al mismo video. Se razona que si para cada descriptor del video de consulta, se encuentra entre sus más cercanos a descriptores de un mismo video, entonces el video de consulta representa una copia de un segmento del video de la colección de referencia.
+\TODO{Hacer un monito para explicar esto}
+\TODO{Quizas sea mejor poner la sección de descriptores antes de esto}
 \section{Descriptores}\label{descriptores}
 Un \emph{descriptor} de imagen es una forma representar dicha imagen por sus características (como su distribución de colores, orientación de bordes, textura, etc). Los descriptores son usualmente representados como vectores multidimensionales. Para compararlos es común usar una función de distancia, como por ejemplo la distancia euclideana entre vectores.
 
@@ -50,6 +53,8 @@ El siguiente código muestra como se puede invocar la aplicación por de la cám
 
 En la primera línea se selecciona el intent apropiado. Es posible agregarle opciones dependiendo de la acción requerida, en el ejemplo se especifica el archivo de salida y la duración máxima del video. Finalmente se invoca la aplicación usando el método \texttt{startActivityForResult} que revibe al intent y un código que identifica a la aplicación original. Para obtener el resultado de la acción basta implementar el método \texttt{onActivityResult} que será llamado automáticamente por el sistema.  
 
+\section*{Procesamiento de imágenes en Android}\label{img_proc}
+\TODO{Aqui hay que poner que se comparó renderscript y opencv y por qué se decidió usar renderscats (con grafiquitos)}
 %%%%%%%%%%%% RENDERSCRIPT %%%%%%%%%%%%%%%%%%%%%%%%%
 \section{RenderScript}\label{renderscript}
 Los dispositivos móviles disponen de limitada memoria y capacidad de computo en comparación con un computador de escritorio. Es por esto que para implementar la extracción de descriptores en Android fue necesario buscar alternativas que permitieran hacer uso eficiente de los recursos disponibles, después de investigar se encontró que Android cuenta con un framework propio para aplicaciones que requieran alta capacidad de computo llamada RenderScript \footnote{\url{http://developer.android.com/guide/topics/renderscript/compute.html}}
