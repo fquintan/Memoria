@@ -12,7 +12,7 @@ En este capítulo se presentan conceptos teóricos necesarios para la comprensi�
 
 \section{Detección de copia basada en contenido}\label{copias}
 
-La detección de copia basada en contenido o \emph{Content Based Copy Detection} (CBCD) se define como: \\
+La detección de copia basada en contenido o \emph{Content Based Copy Detection} (CBCD) se define como~\cite{tesis}: \\
 Sea $V$ una colección de documentos multimedia (imágenes, audio, video) y sea $q$ un documento de búsqueda. Una \emph{detección de copia basada en contenido} consiste en encontrar y recuperar todos los documentos $v \in V$ de la colección tales que $q$ ``es una copia'' de $v$.
 
 En el contexto de esta memoria los documentos corresponden a videos, y la relación ``es una copia'' se refiere a que el video de consulta corresponde a una grabación del video original.
@@ -38,16 +38,15 @@ En general se usa una actividad para manejar un proceso dentro de la aplicación
 
 Existen ciertos procesos que pueden ser necesarios para diversos tipos de aplicaciones, como por ejemplo mostrar los archivos de una carpeta para que el usuario elija uno, o reproducir un archivo de video. Si bien es posible que cada aplicación implemente su propia solución a estos problemas un dispositivo Android usualmente cuenta con aplicaciones predefinidas que realizan estos procesos. Cuando una aplicación requiere tales procesos puede realizar una llamada al sistema que invoque una aplicación predefinida y, una vez se obtenga un resultado (se seleccionó un archivo, se reprodujo el video, etc) se le entregan los resultados de vuelta a la aplicación original. Esta llamada se realiza a través de un objeto \emph{Intent}\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}}, que representa una descripción abstracta del trabajo que se quiere realizar. Android provee una lista de intents estándar para acciones comunes. 
 El siguiente código muestra como se puede invocar la aplicación por de la cámara para grabar un video y guardarlo a archivo:
-\begin{lstlisting}
+\begin{lstlisting}[style=JavaInputStyle]
     Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
     videoFile = getOutputFile();
-
     intent.putExtra(MediaStore.EXTRA_OUTPUT, videoFile);
     intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 5);
 
     startActivityForResult(intent, CAPTURE_VIDEO_ACTIVITY_REQUEST_CODE);
 \end{lstlisting}
-%\TODO{Codigo lindo}
+
 
 En la primera línea se selecciona el intent apropiado. Es posible agregarle opciones dependiendo de la acción requerida, en el ejemplo se especifica el archivo de salida y la duración máxima del video. Finalmente se invoca la aplicación usando el método \texttt{startActivityForResult} que revibe al intent y un código que identifica a la aplicación original. Para obtener el resultado de la acción basta implementar el método \texttt{onActivityResult} que será llamado automáticamente por el sistema.  
 
@@ -58,16 +57,16 @@ Los dispositivos móviles disponen de limitada memoria y capacidad de computo en
 RenderScript es un framework de Android diseñado para lograr alto rendimiento al correr código en paralelo, aunque algoritmos secuenciales también pueden verse beneficiados por él. El funcionamiento de RenderScript se basa en escribir un \emph{kernel} de procesamiento que el sistema puede distribuir a los procesadores disponibles en el dispositivo, como los múltiples núcleos de la CPU, o la GPU. 
 Los kernel se escriben en un lenguaje derivado de C99, a continuación se presenta un ejemplo de un kernel que convierte una imagen en RGBA a escala de grises.
 
-\begin{lstlisting}[basicstyle=\small,frame=bt]
+\begin{lstlisting}[style=CInputStyle]
 #pragma version(1)
 #pragma rs java_package_name(fquintan.renderscripttest)
 #pragma rs_fp_relaxed
 
 void  rgba_to_grayscale(uchar4 *v_in, uchar *v_out,
                                 uint32_t x, uint32_t y) {
-    red = (*v_in).r;
-    green = (*v_in).g;
-    blue = (*v_in).b;
+    uchar red = (*v_in).r;
+    uchar green = (*v_in).g;
+    uchar blue = (*v_in).b;
     uchar intensity = (uchar) 0.2989*red + 0.5870*green + 0.1140*blue;
     *v_out = intensity;
 }
@@ -82,7 +81,7 @@ El caso anterior es simple dado que todos los pixeles son independientes entre s
 Suponiendo que el código anterior se guarda en el archivo \texttt{RGBA2Gray.rs} al compilar se generará la clase Java
 \texttt{ScriptC\_RGBA2Gray} con código que permite ejecutar el script. Para ejecutar primero debemos pasar el input a un formato que RenderScript pueda recibir, para esto el framework provee la clase \texttt{Allocation}\footnote{\url{http://developer.android.com/reference/android/renderscript/Allocation.html}}. Una Allocation es un contenedor para los elementos de entrada y salida de un script. Para el ejemplo anterior debemos crear dos Allocations como sigue:
 
-\begin{lstlisting}[language=Java, frame=bt, numbers=left]
+\begin{lstlisting}[style=JavaInputStyle]
 Allocation inAllocation;
 Allocation outAllocation;
 
@@ -107,7 +106,7 @@ Notemos que en las líneas 8 y 13 se define el tipo de elemento de cada Allocati
 
 Finalmente hay que poblar de datos la Allocation de entrada, correr el script y extraer los datos de la Allocation de salida como muestra el siguiente código:
 
-\begin{lstlisting}[language=Java, frame=bt, numbers=left]
+\begin{lstlisting}[style=JavaInputStyle]
 Bitmap imageRGBA;
 Bitmap imageGray;
 // ... inicializar los bitmaps
@@ -170,7 +169,7 @@ Este ejemplo crea un nuevo perfil de consulta, que usará la base de datos ubica
 \begin{lstlisting}[style=BashInputStyle]
     > pvcd_search -ss -profile perfil -knn 3
 \end{lstlisting}
-Este comando ejecuta la búsqueda, encontrando para cada descriptor de la base de datos de consulta, sus tres vecinos más cercanos. Los resultados se guardan por defecto en el archivo de texto \texttt{ss,segments-knn\_3.txt} del directorio \texttt{perfil}. El paso final es encontrar secuencias entre los vecinos más cercanos usando el comando:
+Este comando ejecuta la búsqueda, encontrando para c|ada descriptor de la base de datos de consulta, sus tres vecinos más cercanos. Los resultados se guardan por defecto en el archivo de texto \texttt{ss,segments-knn\_3.txt} del directorio \texttt{perfil}. El paso final es encontrar secuencias entre los vecinos más cercanos usando el comando:
 \begin{lstlisting}[style=BashInputStyle]
     > pvcd_detect -detect -ss "perfil\ss,segments-knn\_3.txt"
         -minLength 1s -out "perfil\detections.txt"
