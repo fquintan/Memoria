@@ -9,6 +9,12 @@ En este capítulo se presentan conceptos teóricos necesarios para la comprensi�
 \item Video: Corresponde a una secuencia de imágenes (de aquí en adelante \textit{frames}) presentadas cada cierto intervalo de tiempo regular (por ejemplo 24 \textit{frames} cada segundo). 
 \end{enumerate}
 
+\section{Descriptores}\label{descriptores}
+Un \emph{descriptor}~\cite{descriptors} de imagen es una forma representar dicha imagen por sus características (como su distribución de colores, orientación de bordes, textura, etc). Los descriptores son usualmente representados como vectores multidimensionales. Para compararlos es común usar una función de distancia, como por ejemplo la distancia euclideana entre vectores.
+
+El descriptor de una imagen puede ser global o local dependiendo de si describe la imagen completa o solo sectores de ella. \\
+Dado que un video es una secuencia de imágenes se puede describir usando una secuencia de descriptores de imágenes, para hacer esto típicamente se submuestrean los frames del video, es decir, aunque el video muestre 24 frames cada segundo, se pueden considerar solo algunos de ellos a intervalos regulares para describir el video. Esto funciona debido que en la mayoría de los casos dos frames consecutivos son muy similares entre sí, por lo que tomar todos los frames del video para describirlo aporta información redundante.\\
+Es necesario comparar videos o imágenes utilizando descriptores en vez de comparar sus archivos bit a bit debido a que se pueden realizar transformaciones sobre una imagen que cambien totalmente los bits de su archivo sin modificar mucho el contenido de esta, como por ejemplo iluminar la imagen sumándole un valor fijo al valor de todos sus pixeles.
 
 \section{Detección de copia basada en contenido}\label{copias}
 
@@ -23,7 +29,7 @@ La Figura~\ref{deteccion_copia} ilustra las etapas del proceso de detección de 
 
 \begin{figure}
 \centering
-\subcaptionbox{Extracción de descriptores\label{detect_extract}}{%
+\subcaptionbox{Extracción de descriptores. Con mayúscula se representan los videos y con mínuscula y subíndice sus descriptores\label{detect_extract}}{%
   \includegraphics[width=0.6\textwidth]{imagenes/cap2/descriptor_extraction.png}%
   }\par\medskip
 \subcaptionbox{Búsqueda por similitud y detección\label{detect_search}}{%
@@ -33,17 +39,8 @@ La Figura~\ref{deteccion_copia} ilustra las etapas del proceso de detección de 
 \label{deteccion_copia}
 \end{figure}
 
-
-\TODO{Quizas sea mejor poner la sección de descriptores antes de esto}
-\section{Descriptores}\label{descriptores}
-Un \emph{descriptor}~\cite{descriptors} de imagen es una forma representar dicha imagen por sus características (como su distribución de colores, orientación de bordes, textura, etc). Los descriptores son usualmente representados como vectores multidimensionales. Para compararlos es común usar una función de distancia, como por ejemplo la distancia euclideana entre vectores.
-
-El descriptor de una imagen puede ser global o local dependiendo de si describe la imagen completa o solo sectores de ella. \\
-Dado que un video es una secuencia de imágenes se puede describir usando una secuencia de descriptores de imágenes, para hacer esto típicamente se submuestrean los frames del video, es decir, aunque el video muestre 24 frames cada segundo, se pueden considerar solo algunos de ellos a intervalos regulares para describir el video. Esto funciona debido que en la mayoría de los casos dos frames consecutivos son muy similares entre sí, por lo que tomar todos los frames del video para describirlo aporta información redundante.\\
-Es necesario comparar videos o imágenes utilizando descriptores en vez de comparar sus archivos bit a bit debido a que se pueden realizar transformaciones sobre una imagen que cambien totalmente los bits de su archivo sin modificar mucho el contenido de esta, como por ejemplo iluminar la imagen sumándole un valor fijo al valor de todos sus pixeles.
-
 \section{Android}\label{android}
-Android es un sistema operativo desarrollado por Google, es principalmente usado en dispositivos móviles como smartphones y tablets. Las aplicaciones para Android son programas escritos en el lenguaje de programación Java que hacen uso de las bibliotecas del \emph{Software Development Kit} (SDK) de Android para realizar llamadas al sistema operativo. Esta sección presenta brevemente conceptos del sistema Android necesarios para entender la implementación del trabajo realizado.
+Android es un sistema operativo desarrollado por Google~\cite{android}, es principalmente usado en dispositivos móviles como smartphones y tablets. Las aplicaciones para Android son programas escritos en el lenguaje de programación Java que hacen uso de las bibliotecas del \emph{Software Development Kit} (SDK) de Android para realizar llamadas al sistema operativo. Esta sección presenta brevemente conceptos del sistema Android necesarios para entender la implementación del trabajo realizado.
 
 \subsection*{Actividades y Fragmentos}
 
@@ -66,8 +63,7 @@ El siguiente código muestra como se puede invocar la aplicación por de la cám
 
 En la primera línea se selecciona el intent apropiado. Es posible agregarle opciones dependiendo de la acción requerida, en el ejemplo se especifica el archivo de salida y la duración máxima del video. Finalmente se invoca la aplicación usando el método \texttt{startActivityForResult} que revibe al intent y un código que identifica a la aplicación original. Para obtener el resultado de la acción basta implementar el método \texttt{onActivityResult} que será llamado automáticamente por el sistema.  
 
-\section*{Procesamiento de imágenes en Android}\label{img_proc}
-\TODO{Aqui hay que poner que se comparó renderscript y opencv y por qué se decidió usar renderscats (con grafiquitos)}
+\section{Procesamiento de imágenes en Android}\label{img_proc}
 
 Los dispositivos móviles disponen de limitada memoria y capacidad de computo en comparación con un computador de escritorio. Es por esto que para implementar la extracción de descriptores en Android fue necesario buscar alternativas que permitieran hacer uso eficiente de los recursos disponibles, después de investigar se encontraron dos opciones prometedoras. Por un lado está la librería OpenCV\footnote{\url{http://opencv.org/}} de procesamiento de imágenes y visión por computador. Esta librería es ampliamenta usada en la industria y se encuentra disponible para multiples plataformas, incluido el sistema Android. Está implementada en C/C++ y cuenta con interfaces para Java y Python. Se utilizó un libro escrito por los autores de la librería como apoyo para la implementación~\cite{opencv}. Por otro lado Android cuenta con un framework propio para aplicaciones que requieran alta capacidad de computo llamado RenderScript\footnote{\url{http://developer.android.com/guide/topics/renderscript/compute.html}}.
 

@@ -6,7 +6,7 @@
 \author{FELIPE ANDRÉS QUINTANILLA MATEFF}
 \title{CÁLCULO DE DESCRIPTORES DE IMÁGENES EN DISPOSITIVOS ANDROID PARA UN SERVICIO DE BÚSQUEDA DE VIDEOS}
 \auspicio{}
-\date{DICIEMBRE 2015}
+\date{2015}
 \guia{BENJAMÍN BUSTOS CÁRDENAS}
 \carrera{INGENIERO CIVIL EN COMPUTACIÓN}
 \memoria{MEMORIA PARA OPTAR AL TÍTULO DE}
@@ -121,9 +121,15 @@ showstringspaces=false            %
 \maketitle
 
 \begin{abstract}
-Hoy en día existe gran cantidad de contenido audiovisual sin etiquetar, lo cual dificulta su búsqueda y reconocimiento. Para buscar videos en colecciones no etiquetadas se usa la búsqueda por similitud, que se basa en comparar videos usando descriptores -vectores que contienen información del contenido del video- para establecer relaciones de semejanza entre videos que permiten encontrar videos similares.
 
-Existen soluciones disponibles capaces de realizar la búsqueda por similitud para archivos de video en un mismo computador. En esta memoria se propone e implementa un sistema de búsqueda de videos que utiliza dispositivos móviles Android para grabar un video, y realiza la búsqueda por similitud haciendo uso de las herramientas existentes. Además se ponen a prueba distintas implementaciones del sistema para compararlas en términos de su eficiencia y eficacia.  
+Desde sus inicios en el cine el material audiovisual sólo se ha masificado y multiplicado. Luego del cine, la aparición de la televisión hace que el consumo este tipo de contenido sea aún más accesible que en épocas anteriores y con las primeras cámaras de video caseras el producir contenido audiovisual se vuelve de a poco más y más común. Gracias a los dispositivos móviles, cámaras de video y cámaras fotográficas cualquier persona puede generar contenido audiovisual. Además a lo anterior se le suman las producciones oficiales de videos musicales, películas, series de televisión, etc. por lo que la cantidad de contenido es enorme y poder identificarlo se vuelve un problema. Hoy en día gran parte de este contenido se encuentra sin etiquetar, es decir no contiene información asociada que lo identifique, haciendo difícil su búsqueda y reconocimiento.
+
+La búsqueda de videos cuando estos no se encuentran etiquetados requiere el uso de técnicas como la \textit{búsqueda por similitud}. Esta búsqueda utiliza descriptores para encontrar videos. Los descriptores son vectores que contienen información del contenido del video, estos describen ciertas características del contenido como puede ser la distribución de colores, intensidad de luz, la ubicación y dirección de los bordes contenidos dentro de una imágen, etc. De esta forma la \textit{búsqueda por similitud} se basa en comparar videos usando descriptores para establecer relaciones de semejanza entre videos. De acuerdo a estas relaciones de semejanza es posible encontrar videos que son similares entre sí. 
+
+Actualmente existen soluciones disponibles capaces de realizar la búsqueda por similitud para archivos de video en un mismo computador, sin embargo esta solución no es de fácil acceso para las personas. En esta memoria se propone e implementa un sistema de búsqueda de videos que utiliza dispositivos móviles Android para grabar un video y calcular sus descriptores respectivos, para luego enviar los descriptores a un servidor para realizar una búsqueda por similitud haciendo uso de las herramientas existentes. Se evaluó la eficiencia del sistema propuesto comparando su tiempo de respuesta y uso de la red de datos con una implementación alternativa del sistema, que envía videos completos al servidor para ser procesados. Por otro lado se evaluó la eficacia del sistema implementando tres tipos de descriptores de video distintos, y midiendo el porcentaje de respuestas correctas obtenido al usar cada uno.
+
+Los resultados obtenidos indican que los dispositivos móviles son capaces de realizar la extracción de descriptores eficientemente. El sistema propuesto es más eficiente que la alternativa de enviar videos completos al servidor, con respecto a este sistema alternativo se redujo el tiempo de respuesta del sistema en 30\%, mientras que la cantidad de datos enviada al servidor pasó de más de 6 Megabytes a aproximadamente 20 Kilobytes. Con respecto a la eficacia del sistema, uno de los descriptores implementados obtuvo una precisión cercana al 55\% mientras que los otros dos mostraron resultados apenas mejores que el azar.
+
 \end{abstract}
 
 \begin{dedicatoria} % opcional
@@ -133,11 +139,12 @@ Una dedicatoria corta. Por ejemplo, \emph{A los creadores de U-Campus}
 \begin{thanks} % opcional
 \lipsum[1-2]
 \end{thanks}
-\cleardoublepage
+%\cleardoublepage
 
 \tableofcontents
 %\listoftables % opcional
-\listoffigures % opcional
+{ \let\cleardoublepage\clearpage \listoffigures}
+% opcional
 
 \mainmatter
 %\doublespacing
@@ -148,12 +155,13 @@ Una dedicatoria corta. Por ejemplo, \emph{A los creadores de U-Campus}
 \input{cap4.tex}
 \input{cap5.tex}
 \input{conclu.tex}
-\input{Anexos.tex}
 
 % \input{glosario.tex} % opcional
 
 \bibliographystyle{plain}
 \bibliography{bibliografia}
+
+\input{Anexos.tex}
 
 % \input{anexo_apendices.tex} % opcionales
 

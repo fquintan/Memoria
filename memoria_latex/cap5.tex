@@ -15,6 +15,8 @@ El tiempo de respuesta se midió como el intervalo de tiempo desde que el client
 \displaystyle{Tiempo\ total\ de\ respuesta}  =  \displaystyle{Tiempo\ de\ transmisi\acute{o}n} + \displaystyle{Tiempo\ total\ del\ servidor} 
 \end{equation*}
 
+Adicionalmente se midió el tiempo requerido por el dispositivo móvil para realizar el cálculo de cada tipo de descriptor.
+
 \section{Resultados}\label{resultados}
 A continuación se presentan los resultados de los experimentos realizados y su interpretación. 
 
@@ -35,6 +37,16 @@ En el caso del descriptor EHD, el efecto que provoca mayor error es probablement
 El buen desempeño del descriptor CLD puede también deberse al dataset utilizado para las pruebas. La base de datos contiene muchas películas en blanco y negro, por lo que al usar el descriptor CLD (que usa el color de la imagen) todas las películas en blanco negro se encontrarán agrupadas en la base de datos, mientras que las películas a color estarán distribuidas de manera más dispersa, facilitando su identificación y mejorando en promedio la precisión del descriptor. Este efecto debería favorecer a cualquier descriptor que haga uso del color de la imagen.
 
 \subsection{Eficiencia}
+La Figura~\ref{resultados_tiempo_descriptor} muestra el tiempo requerido por la aplicación móvil para calcular cada tipo de descriptor. En todos los casos el tiempo fue considerablemente menor que el tiempo de refresco de la cámara, es decir el sistema es capaz de calcular el descriptor correspondiente a un frame de video antes que la cámara capture el siguiente frame.
+
+Es posible observar que el cálculo del descriptor CLD requiere casi un 50\% más tiempo que el cálculo del descriptor EHD, esto puede contraintuitivo puesto que el primer paso del cálculo de EHD es similar al cálculo de CLD como se explicó en la sección~\ref{distr}. Sin embargo la razón de estos tiempos de cálculo se vuelve evidente si se considera que el cálculo se realiza de forma concurrente. Si bien ambos descriptores presentan una etapa muy similar, reducir la imagen calculando para cada sección un color promedio, en el descriptor CLD la imagen se reduce a $10 \times 10$ secciones, mientras que en EHD se reduce a $64 \times 64$. Dado que el valor promedio se calcula usando una variable compartida a la cual accesan distintos \emph{threads}, cuando la imagen se divide en más secciones habrá menos \emph{threads} intentando acceder a la variable compartida, por lo que habrán menos sobrecosto producido por la sincronización entre \emph{threads}. 
+
+\begin{figure}[!h]
+		\centering
+		\includegraphics[width=\textwidth]{imagenes/cap5/resultados_tiempo_descriptor.png}
+		\caption{Gráfico con comparación de tiempos de cálculo de cada descriptor en el dispositivo móvil}
+		\label{resultados_tiempo_descriptor}
+	\end{figure}
 
 La figura~\ref{resultados_tiempos_total} muestra la medición del tiempo total de respuesta de cada implementación del sistema y para cada descriptor. De la figura podemos apreciar que para todos los casos la implementación distribuida requiere un tercio menos tiempo en comparación con la implementación centralizada. 
 

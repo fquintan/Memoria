@@ -22,7 +22,7 @@ El descriptor de distribución de colores o \emph{color layout descriptor} busca
 	\end{figure}
 
 \section{Descriptor de histograma de bordes por zona (EHD)}\label{ehd}
-El descriptor de histograma de bordes o \emph{edge histogram descriptor} busca representar la orientación de los bordes presentes en la imagen \cite{ParkJW00:ehd, Manjunath:desc}. Se construye pasando la imagen a escala de grises y particionándola en $W \times H$ zonas, cada zona se subdivide en $M_w \times M_h$ bloques y cada bloque se subdivide en cuatro sub-bloques como muestra la Figura~\ref{ehd_blocks}. 
+El descriptor de histograma de bordes o \emph{edge histogram descriptor} busca representar la orientación de los bordes presentes en la imagen \cite{ParkJW00:ehd, Manjunath:desc}. Se construye pasando la imagen a escala de grises y particionándola en $W \times H$ zonas, cada zona se subdivide en $M_w \times M_h$ bloques y cada bloque se subdivide en cuatro sub-bloques como muestra la Figura~\ref{ehd_blocks}. De aquí en adelante se trata al sub-bloque como la unidad mínima de la imagen, y su valor corresponde al promedio de intensidad de gris de los pixeles contenidos en el sub-bloque.
     \begin{figure}[!h]
 		\centering
 		\includegraphics[scale=0.45]{imagenes/cap3/ehd_blocks.png}

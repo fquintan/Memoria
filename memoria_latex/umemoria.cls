@@ -60,7 +60,7 @@
 
 %% Entornos nuevos
 \newenvironment{abstract}{%
-\cleardoublepage
+%\cleardoublepage
 \begin{flushright}
 \small
 \begin{tabular}{l}
@@ -76,9 +76,9 @@ PROF. GUÍA: SR. \MakeUppercase\@guia \\
 \end{center}
 }{\vfill\null}
 
-\newenvironment{dedicatoria}{\cleardoublepage\null\vspace{\stretch{1}}\begin{flushright}\itshape}{\end{flushright}\vspace{\stretch{2}}\null}
+\newenvironment{dedicatoria}{\pagebreak\null\vspace{\stretch{1}}\begin{flushright}\itshape}{\end{flushright}\vspace{\stretch{2}}\null}
 \let\thanks\undefined
-\newenvironment{thanks}{\cleardoublepage\chapter*{Agradecimientos}}{\vfill\null}
+\newenvironment{thanks}{\chapter*{Agradecimientos}}{\vfill\null}
 \newenvironment{intro}{\addcontentsline{toc}{chapter}{\protect\numberline{}Introducción}\chapter*{Introducción}}{\vfill\null}
 \newenvironment{conclusion}{\addcontentsline{toc}{chapter}{\protect\numberline{}Conclusión}\chapter*{Conclusión}}{\vfill\null}
 \newenvironment{Anexos}{\addcontentsline{toc}{chapter}{\protect\numberline{}Anexo}\chapter*{Anexo}}{\vfill\null}

@@ -179,7 +179,7 @@ El cálculo de descriptores de imágenes es realizado por clases que implementan
 		\label{diagrama_clases_extractores}
 	\end{figure}
 
-VideoDescriptorExtractor implementa la interfaz \texttt{PreviewCallback} con lo que se puede registrar para obtener frames de la cámara. Cada frame se recibe como un arreglo de bytes en formato YUV. En este cada pixel se divide en valores de \emph{luma} (Y) que indica la intensidad de luz y \emph{chroma} (UV) que indican el color. Específicamente se usa el formato YUV420 NV21\footnote{\url{http://www.fourcc.org/yuv.php\#NV21}}, que establece un ordenamiento de los valores como indica la figura~\ref{formato_yuv}. Los primeros $W \times H$ bytes corresponden a los valores de \emph{luma} de cada pixel, donde $W$ y $H$ corresponden al ancho y alto de la imagen.  
+VideoDescriptorExtractor implementa la interfaz \texttt{PreviewCallback} con lo que se puede registrar para obtener frames de la cámara. Cada frame se recibe como un arreglo de bytes en formato YUV. En este cada pixel se divide en valores de \emph{luma} (Y) que indica la intensidad de luz y \emph{chroma} (UV) que indican el color. Específicamente se usa el formato YUV420 NV21~\cite{yuv}, que establece un ordenamiento de los valores como indica la figura~\ref{formato_yuv}. Los primeros $W \times H$ bytes corresponden a los valores de \emph{luma} de cada pixel, donde $W$ y $H$ corresponden al ancho y alto de la imagen.  
 	\begin{figure}[!h]
 		\centering
 		\includegraphics[scale=0.3]{imagenes/cap4/yuv.png}
