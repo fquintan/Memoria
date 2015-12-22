@@ -70,7 +70,7 @@ Los dispositivos móviles disponen de limitada memoria y capacidad de computo en
 Antes de comenzar la implementación de la memoria se pusieron a prueba ambas alternativas. Se implementaron dos operaciones típicas de procesamiento de imágenes, convertir una imágen de color a gris y realizar una convolución, además se implementó unos de los descriptores usados en la memoria. Se implementaron de manera que fueran capaces de recibir \emph{frames} de la cámara del dispositivo mientras esta realiza una grabación. Se midió la cantidad de tiempo requerido por cada implementación para realizar cada operación, además se usaron dos calidades de video distintas para medir el efecto del aumento en el tamaño de la imagen. Los resultados de estas pruebas se resumen en la Figura~\ref{renderscript_vs_opencv}, podemos ver que en todos los casos la implementación en Renderscript resultó ser más rápida que la de OpenCV. Dados estos resultados se decidió utilizar el framework RenderderScript para implementar las tareas de procesamiento de imágenes en el dispositivo móvil. 
     \begin{figure}[!h]
 		\centering
-		\includegraphics[scale=0.6]{imagenes/cap2/renderscript_vs_opencv.png}
+		\includegraphics[scale=0.5]{imagenes/cap2/renderscript_vs_opencv.png}
 		\caption{Resultados de la comparación entre RenderScript y OpenCV.}
 		\label{renderscript_vs_opencv}
 	\end{figure}
