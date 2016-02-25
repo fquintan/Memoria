@@ -195,7 +195,7 @@ A continuación se explica en detalle el funcionamiento de cada extractor de des
 \texttt{GrayHistogramExtractor} maneja el cálculo de histogramas de grises por zona. El algoritmo para calcular el descriptor consiste de cuatro etapas:
 \begin{enumerate}
 \item Transformar imagen de color en formato YUV a escala de grises.
-\item Croppear imagen para ajustarse a los límites establecidos por el usuario.
+\item Recortar imagen para ajustarse a los límites establecidos por el usuario.
 \item Calcular histograma, esto es, contar la cantidad de pixeles con cierta intensidad en cada zona.
 \item Normalizar histograma.
 \end{enumerate}
@@ -212,7 +212,7 @@ En la cuarta etapa primero se extrae el contenido de la Allocation que contiene 
 \texttt{ColorLayoutExtractor} maneja el cálculo del descriptor de distribución de colores. El algoritmo para calcularlo toma los siguientes pasos:
 \begin{enumerate}
 \item Transformar imagen de formato YUV a formato RGB.
-\item Croppear imagen para ajustarse a los límites establecidos por el usuario.
+\item Recortar imagen para ajustarse a los límites establecidos por el usuario.
 \item Calcular el promedio de color por canal en cada zona.
 \end{enumerate}
 
@@ -226,14 +226,14 @@ El tercer paso se realiza usando RenderScript con el script \texttt{color\_layou
 La clase \texttt{EdgeHistogramExtractor} se encarga del cálculo del descriptor de histograma de bordes. Los pasos del algoritmo para el computo son los siguientes:
 \begin{enumerate}
 \item Transformar imagen de color en formato YUV a escala de grises.
-\item Croppear imagen para ajustarse a los límites establecidos por el usuario.
+\item Recortar imagen para ajustarse a los límites establecidos por el usuario.
 \item Reducir la imagen a una cantidad fija de bloques, donde el valor de cada zona corresponde al promedio del valor de los pixeles dentro de la zona.
 \item Calcular la energía de cada filtro aplicándolo sobre grupos de cuatro bloques. Se selecciona el mayor y se revisa si la energía correspondiente excede un valor umbral.
 \item Calcular el histograma de bordes, que indica por zona cuantos grupos de bloques presentan cada uno de los tipos de bordes posibles.
 \item Normalizar el histograma.
 \end{enumerate}
 
-Las primeras dos etapa son idénticas a las primeras etapas del cálculo del descriptor de histograma de grises y se realizan de la misma forma. El resultado al final de la segunda etapa es un Allocation con los valores de gris correspondiente a la sección de la imagen seleccionada por el usuario.
+Las primeras dos etapas son idénticas a las primeras etapas del cálculo del descriptor de histograma de grises y se realizan de la misma forma. El resultado al final de la segunda etapa es un Allocation con los valores de gris correspondiente a la sección de la imagen seleccionada por el usuario.
 
 La tercer etapa es similar al cálculo del descriptor de distribución de colores y se realiza de forma análoga. El script \texttt{reducer.rs} divide la imagen en bloques e itera sobre cada pixel sumando su valor de gris al de la zona correspondiente. El resultado del script es una Allocation con la suma de los pixeles en cada zona. Al igual que en el descriptor anterior se extraen los resultados a un arreglo usando el método \texttt{copyTo} y se divide cada valor por la cantidad de pixeles por zona, con esto se obtiene un arreglo con el valor de gris promedio en cada zona.
 

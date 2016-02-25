@@ -50,7 +50,7 @@ En general se usa una actividad para manejar un proceso dentro de la aplicación
 \subsection*{Comunicación entre aplicaciones}
 
 Existen ciertos procesos que pueden ser necesarios para diversos tipos de aplicaciones, como por ejemplo mostrar los archivos de una carpeta para que el usuario elija uno, o reproducir un archivo de video. Si bien es posible que cada aplicación implemente su propia solución a estos problemas un dispositivo Android usualmente cuenta con aplicaciones predefinidas que realizan estos procesos. Cuando una aplicación requiere tales procesos puede realizar una llamada al sistema que invoque una aplicación predefinida y, una vez se obtenga un resultado (se seleccionó un archivo, se reprodujo el video, etc) se le entregan los resultados de vuelta a la aplicación original. Esta llamada se realiza a través de un objeto \emph{Intent}\footnote{\url{http://developer.android.com/reference/android/content/Intent.html}}, que representa una descripción abstracta del trabajo que se quiere realizar. Android provee una lista de intents estándar para acciones comunes. 
-El siguiente código muestra como se puede invocar la aplicación por de la cámara para grabar un video y guardarlo a archivo:
+El siguiente código muestra como se puede invocar la aplicación por defecto de la cámara para grabar un video y guardarlo a archivo:
 \begin{lstlisting}[style=JavaInputStyle]
     Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
     videoFile = getOutputFile();
@@ -61,13 +61,13 @@ El siguiente código muestra como se puede invocar la aplicación por de la cám
 \end{lstlisting}
 
 
-En la primera línea se selecciona el intent apropiado. Es posible agregarle opciones dependiendo de la acción requerida, en el ejemplo se especifica el archivo de salida y la duración máxima del video. Finalmente se invoca la aplicación usando el método \texttt{startActivityForResult} que revibe al intent y un código que identifica a la aplicación original. Para obtener el resultado de la acción basta implementar el método \texttt{onActivityResult} que será llamado automáticamente por el sistema.  
+En la primera línea se selecciona el intent apropiado. Es posible agregarle opciones dependiendo de la acción requerida, en el ejemplo se especifica el archivo de salida y la duración máxima del video. Finalmente se invoca la aplicación usando el método \texttt{startActivityForResult} que recibe al intent y un código que identifica a la aplicación original. Para obtener el resultado de la acción basta implementar el método \texttt{onActivityResult} que será llamado automáticamente por el sistema.  
 
 \section{Procesamiento de imágenes en Android}\label{img_proc}
 
 Los dispositivos móviles disponen de limitada memoria y capacidad de computo en comparación con un computador de escritorio. Es por esto que para implementar la extracción de descriptores en Android fue necesario buscar alternativas que permitieran hacer uso eficiente de los recursos disponibles, después de investigar se encontraron dos opciones prometedoras. Por un lado está la librería OpenCV\footnote{\url{http://opencv.org/}} de procesamiento de imágenes y visión por computador. Esta librería es ampliamenta usada en la industria y se encuentra disponible para multiples plataformas, incluido el sistema Android. Está implementada en C/C++ y cuenta con interfaces para Java y Python. Se utilizó un libro escrito por los autores de la librería como apoyo para la implementación~\cite{opencv}. Por otro lado Android cuenta con un framework propio para aplicaciones que requieran alta capacidad de computo llamado RenderScript\footnote{\url{http://developer.android.com/guide/topics/renderscript/compute.html}}.
 
-Antes de comenzar la implementación de la memoria se pusieron a prueba ambas alternativas. Se implementaron dos operaciones típicas de procesamiento de imágenes, convertir una imágen de color a gris y realizar una convolución, además se implementó unos de los descriptores usados en la memoria. Se implementaron de manera que fueran capaces de recibir \emph{frames} de la cámara del dispositivo mientras esta realiza una grabación. Se midió la cantidad de tiempo requerido por cada implementación para realizar cada operación, además se usaron dos calidades de video distintas para medir el efecto del aumento en el tamaño de la imagen. Los resultados de estas pruebas se resumen en la Figura~\ref{renderscript_vs_opencv}, podemos ver que en todos los casos la implementación en Renderscript resultó ser más rápida que la de OpenCV. Dados estos resultados se decidió utilizar el framework RenderderScript para implementar las tareas de procesamiento de imágenes en el dispositivo móvil. 
+Antes de comenzar la implementación de la memoria se pusieron a prueba ambas alternativas. Se implementaron dos operaciones típicas de procesamiento de imágenes, convertir una imágen de color a gris y realizar una convolución, además se implementó unos de los descriptores usados en la memoria. Se implementaron de manera que fueran capaces de recibir \emph{frames} de la cámara del dispositivo mientras esta realiza una grabación. Se midió la cantidad de tiempo requerido por cada implementación para realizar cada operación, además se usaron dos calidades de video distintas para medir el efecto del aumento en el tamaño de la imagen. Los resultados de estas pruebas se resumen en la Figura~\ref{renderscript_vs_opencv}, podemos ver que en todos los casos la implementación en Renderscript resultó ser más rápida que la de OpenCV. Dados estos resultados se decidió utilizar el framework RenderScript para implementar las tareas de procesamiento de imágenes en el dispositivo móvil. 
     \begin{figure}[!h]
 		\centering
 		\includegraphics[scale=0.5]{imagenes/cap2/renderscript_vs_opencv.png}
@@ -75,7 +75,7 @@ Antes de comenzar la implementación de la memoria se pusieron a prueba ambas al
 		\label{renderscript_vs_opencv}
 	\end{figure}
 
-En la siguiente sección se detalla el funcionamiento del framework RenderScript
+En la siguiente sección se detalla el funcionamiento del framework RenderScript.
 
 %%%%%%%%%%%% RENDERSCRIPT %%%%%%%%%%%%%%%%%%%%%%%%%
 \section{RenderScript}\label{renderscript}
@@ -194,7 +194,7 @@ Este ejemplo crea un nuevo perfil de consulta, que usará la base de datos ubica
 \begin{lstlisting}[style=BashInputStyle]
     > pvcd_search -ss -profile perfil -knn 3
 \end{lstlisting}
-Este comando ejecuta la búsqueda, encontrando para c|ada descriptor de la base de datos de consulta, sus tres vecinos más cercanos. Los resultados se guardan por defecto en el archivo de texto \texttt{ss,segments-knn\_3.txt} del directorio \texttt{perfil}. El paso final es encontrar secuencias entre los vecinos más cercanos usando el comando:
+Este comando ejecuta la búsqueda, encontrando para cada descriptor de la base de datos de consulta, sus tres vecinos más cercanos. Los resultados se guardan por defecto en el archivo de texto \texttt{ss,segments-knn\_3.txt} del directorio \texttt{perfil}. El paso final es encontrar secuencias entre los vecinos más cercanos usando el comando:
 \begin{lstlisting}[style=BashInputStyle]
     > pvcd_detect -detect -ss "perfil\ss,segments-knn\_3.txt"
         -minLength 1s -out "perfil\detections.txt"

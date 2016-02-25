@@ -4,7 +4,7 @@
 \section{Descriptor de Histograma de grises por zona (GHD)}\label{ghd}
 El descriptor de histograma de grises o \emph{gray histogram descriptor} busca capturar la distribución espacial de la luz en la imagen usando histogramas de grises~\cite{tesis}. Un histograma de grises, o histograma de intensidad, representa la cantidad de pixeles con cierto rango de intensidad, suponiendo que un pixel tiene intensidad entre 0 y 255 y que el histograma tiene $m$ bins entonces el valor del bin $i$ del histograma representa la cantidad de pixeles en la imagen con intensidad en el intervalo $[\frac{255*i}{m},\frac{255*(i+1)}{m})$.
 
-Para calcular el GHD de una imagen primero se pasa la imagen a escala de grises, luego se divide en $W \times H$ zonas, para cada zona se calcula un histograma de $m$ bins con la intensidad de sus pixeles, para formar el descriptor global de la imagen se concatenan los histogramas de cada zona. La figura~\ref{descriptor_ghd} ilustra el proceso del cálculo del descriptor.El descriptor final es un vector de $W \times H \times m$ dimensiones.
+Para calcular el GHD de una imagen primero se pasa la imagen a escala de grises, luego se divide en $W \times H$ zonas, para cada zona se calcula un histograma de $m$ bins con la intensidad de sus pixeles, para formar el descriptor global de la imagen se concatenan los histogramas de cada zona. La figura~\ref{descriptor_ghd} ilustra el proceso del cálculo del descriptor. El descriptor final es un vector de $W \times H \times m$ dimensiones.
     \begin{figure}[!h]
 		\centering
 		\includegraphics[scale=0.4]{imagenes/cap3/descriptor_ghd.png}
